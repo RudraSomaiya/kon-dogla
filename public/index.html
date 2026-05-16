@@ -159,6 +159,16 @@
   .toggle-track { transition: background 0.2s; }
   .toggle-thumb { transition: transform 0.2s; }
 
+  @keyframes go-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .go-spin { animation: go-spin 8s linear infinite; }
+  @keyframes go-spin-rev {
+    from { transform: rotate(360deg); }
+    to   { transform: rotate(0deg); }
+  }
+  .go-spin-rev { animation: go-spin-rev 10s linear infinite; }
   /* Word Reveal envelope */
   .envelope-container { perspective: 600px; }
   .envelope-flap {
@@ -523,6 +533,191 @@
 </main>
 
 <!-- ════════════════════════════════════════════
+     SCREEN: DISCUSSION
+════════════════════════════════════════════ -->
+<main id="screen-discussion" class="screen flex-col w-full min-h-screen items-center justify-center relative overflow-hidden">
+
+  <!-- Radial spotlight background -->
+  <div id="disc-bg" class="absolute inset-0 z-0 pointer-events-none transition-all duration-1000"
+       style="background:radial-gradient(ellipse at center, rgba(147,0,10,0.4) 0%, #14121b 70%)"></div>
+
+  <!-- Content -->
+  <div class="relative z-10 flex flex-col items-center gap-8 w-full max-w-md px-5 text-center">
+
+    <!-- Phase label -->
+    <div class="flex flex-col items-center gap-2">
+      <span id="disc-phase-icon" class="material-symbols-outlined text-5xl text-error drop-shadow-[0_0_16px_rgba(255,180,171,0.6)]" style="font-variation-settings:'FILL' 1">mic</span>
+      <h2 id="disc-phase-label" class="font-headline-md text-headline-md text-on-surface tracking-widest uppercase">First to Speak</h2>
+    </div>
+
+    <!-- Speaker chip -->
+    <div class="flex items-center gap-4 bg-surface-container-high/50 px-8 py-3 rounded-full border border-outline-variant/30">
+      <div id="disc-speaker-dot" class="w-4 h-4 rounded-full shadow-[0_0_15px_rgba(255,180,171,0.8)]" style="background:#ff6b6b"></div>
+      <h3 id="disc-speaker-name" class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-widest">---</h3>
+    </div>
+
+    <!-- Timer -->
+    <div class="flex flex-col items-center">
+      <div id="disc-timer" class="text-[72px] font-display-lg text-tertiary drop-shadow-[0_0_20px_rgba(0,219,233,0.6)] font-bold leading-none tabular-nums">--:--</div>
+      <p id="disc-hint" class="font-body-md text-on-surface-variant max-w-[280px] mt-3">Say one word related to the topic — no cheating!</p>
+    </div>
+
+    <!-- Vote CTA -->
+    <div id="disc-vote-wrap" class="w-full pt-4">
+      <button id="disc-vote-btn" onclick="discGoToVote()"
+        class="w-full bg-secondary-container text-on-secondary-container font-display-lg-mobile py-5 rounded-xl shadow-[0_8px_32px_rgba(219,238,0,0.3)] hover:scale-[1.02] active:scale-95 transition-all uppercase flex items-center justify-center gap-4 italic tracking-wider">
+        <span class="material-symbols-outlined text-3xl" style="font-variation-settings:'FILL' 1">how_to_vote</span>
+        VOTE
+      </button>
+    </div>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: GAME OVER
+════════════════════════════════════════════ -->
+<main id="screen-game-over" class="screen flex-col w-full min-h-screen relative overflow-x-hidden pb-40 pt-12 px-5">
+
+  <!-- Decorative fire particles (innocents win) -->
+  <div id="go-particles" class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30 select-none">
+    <div class="absolute top-1/4 left-10 text-3xl animate-bounce">🔥</div>
+    <div class="absolute top-1/3 right-20 text-2xl rotate-45 animate-pulse">✨</div>
+    <div class="absolute bottom-1/4 left-24 text-4xl -rotate-12 animate-bounce" style="animation-delay:0.3s">🔥</div>
+    <div class="absolute bottom-1/3 right-12 text-3xl animate-bounce" style="animation-delay:0.6s">🎊</div>
+  </div>
+
+  <!-- Radial background -->
+  <div id="go-bg" class="fixed inset-0 pointer-events-none z-0"
+    style="background:radial-gradient(circle at 50% 50%, rgba(157,0,255,0.1) 0%, transparent 70%)"></div>
+
+  <!-- Content -->
+  <div class="relative z-10 flex flex-col items-center text-center gap-8 max-w-lg mx-auto w-full">
+
+    <!-- Hero heading -->
+    <div class="space-y-3 mt-4">
+      <h1 id="go-title" class="font-display-lg-mobile text-[52px] uppercase leading-none drop-shadow-[0_0_20px_rgba(219,238,0,0.6)]">---</h1>
+      <p id="go-liar-text" class="font-headline-sm text-headline-sm text-primary max-w-xs mx-auto"></p>
+    </div>
+
+    <!-- Imposter cards grid -->
+    <div id="go-liars-grid" class="w-full grid grid-cols-1 gap-4"></div>
+
+    <!-- Stats row -->
+    <div class="w-full bg-surface-container-highest/50 backdrop-blur-xl p-6 rounded-[32px] border border-white/5 shadow-xl">
+      <div class="flex justify-around items-center gap-4 flex-wrap">
+        <div class="text-center">
+          <div class="font-label-bold text-label-bold text-outline uppercase mb-1">IMPOSTERS</div>
+          <div id="go-stat-imposters" class="font-display-lg-mobile text-display-lg-mobile text-primary">?</div>
+        </div>
+        <div class="h-10 w-px bg-outline/20"></div>
+        <div class="text-center">
+          <div class="font-label-bold text-label-bold text-outline uppercase mb-1">SURVIVORS</div>
+          <div id="go-stat-survivors" class="font-display-lg-mobile text-display-lg-mobile text-secondary-container">?</div>
+        </div>
+        <div class="h-10 w-px bg-outline/20"></div>
+        <div class="text-center">
+          <div class="font-label-bold text-label-bold text-outline uppercase mb-1">THE WORD</div>
+          <div id="go-stat-word" class="font-display-lg-mobile text-display-lg-mobile text-tertiary">?</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky footer buttons -->
+  <footer class="fixed bottom-0 left-0 w-full p-5 bg-gradient-to-t from-background via-background/95 to-transparent z-50">
+    <div class="max-w-lg mx-auto flex flex-col gap-3">
+      <button onclick="goPlayAgain()"
+        class="w-full h-14 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center gap-3 shadow-[0_6px_0_0_#616a00] hover:shadow-[0_4px_0_0_#616a00] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all group">
+        <span class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-500">replay</span>
+        <span class="font-display-lg-mobile text-[20px] uppercase">PLAY AGAIN</span>
+      </button>
+      <button onclick="goLeave()"
+        class="w-full py-3 rounded-xl border-2 border-outline-variant text-outline font-label-bold text-label-bold uppercase tracking-widest hover:bg-surface-container-high/50 active:scale-95 transition-all">
+        LEAVE ROOM
+      </button>
+    </div>
+  </footer>
+</main>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: VOTING
+════════════════════════════════════════════ -->
+<main id="screen-voting" class="screen flex-col w-full min-h-screen justify-between py-12 px-5 overflow-y-auto"
+  style="background:radial-gradient(circle at top, #2d004f 0%, #14121b 100%)">
+
+  <!-- Header: countdown -->
+  <header class="w-full text-center mt-8">
+    <div id="vote-timer" class="font-display-lg-mobile text-display-lg-mobile text-secondary-container tracking-tighter italic"
+         style="text-shadow:0 0 10px rgba(219,238,0,0.5),0 0 20px rgba(219,238,0,0.3)">0:00</div>
+    <div class="font-label-bold text-label-bold text-on-surface-variant tracking-[0.2em] mt-2">TIME TO UNMASK</div>
+  </header>
+
+  <!-- Player list -->
+  <main class="w-full max-w-md mx-auto flex flex-col gap-4 my-8">
+    <div id="vote-list" class="flex flex-col gap-4"><!-- injected by JS --></div>
+  </main>
+
+  <!-- Footer: vote count -->
+  <footer class="w-full text-center mb-4">
+    <div class="inline-flex flex-col items-center gap-3">
+      <div class="px-4 py-1 rounded-full bg-surface-container-highest border border-outline-variant/20">
+        <span id="vote-count-label" class="font-label-bold text-label-bold text-secondary-container tracking-widest">0 OF ? VOTED</span>
+      </div>
+      <div id="vote-waiting" class="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant/70 italic">
+        Choose wisely
+        <div class="flex gap-1 animate-pulse">
+          <span class="w-1 h-1 bg-on-surface-variant rounded-full"></span>
+          <span class="w-1 h-1 bg-on-surface-variant rounded-full"></span>
+          <span class="w-1 h-1 bg-on-surface-variant rounded-full"></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</main>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: ELIMINATION RESULT
+════════════════════════════════════════════ -->
+<main id="screen-elimination" class="screen flex-col w-full min-h-screen items-center justify-between p-5 relative overflow-hidden">
+
+  <!-- Atmospheric glow -->
+  <div id="elim-glow" class="fixed inset-0 pointer-events-none z-0"
+    style="background:radial-gradient(circle at center, rgba(157,0,255,0.15) 0%, transparent 70%)"></div>
+  <div class="fixed inset-0 bg-gradient-to-b from-surface/0 via-surface/40 to-surface pointer-events-none z-0"></div>
+
+  <!-- Main content -->
+  <div class="relative z-10 flex flex-col items-center justify-center flex-grow w-full pt-16">
+    <!-- Player name -->
+    <div class="mb-8">
+      <h2 id="elim-name" class="font-display-lg-mobile text-display-lg-mobile text-secondary-fixed italic font-extrabold tracking-tighter transform -rotate-2">---</h2>
+    </div>
+
+    <!-- Big circle -->
+    <div id="elim-circle" class="relative w-64 h-64 rounded-full flex items-center justify-center border-4 border-on-secondary-container/20"
+         style="background:#dbee00;box-shadow:0 0 60px rgba(221,238,0,0.4),inset 0 0 20px rgba(221,238,0,0.2)">
+      <div class="absolute inset-2 border-2 border-dashed border-on-secondary-container/30 rounded-full"></div>
+      <span id="elim-icon" class="material-symbols-outlined text-[140px] text-on-secondary-container"
+            style="font-variation-settings:'FILL' 0,'wght' 200,'GRAD' 0,'opsz' 48">sentiment_dissatisfied</span>
+      <!-- Pulse rings -->
+      <div class="absolute -inset-4 border border-secondary-fixed/20 rounded-full animate-pulse"></div>
+      <div class="absolute -inset-8 border border-secondary-fixed/10 rounded-full animate-pulse opacity-50" style="animation-delay:0.5s"></div>
+    </div>
+
+    <!-- Verdict -->
+    <h1 id="elim-verdict" class="mt-8 font-display-lg-mobile text-display-lg-mobile text-secondary-fixed uppercase tracking-tight text-center drop-shadow-[0_4px_12px_rgba(221,238,0,0.3)]">WAS THE DOGLA! 👺</h1>
+  </div>
+
+  <!-- Footer action -->
+  <footer class="relative z-10 w-full pb-4">
+    <button id="elim-next-btn" onclick="elimNext()"
+      class="w-full bg-secondary-fixed text-on-secondary-fixed py-5 rounded-xl font-label-bold text-label-bold uppercase tracking-widest flex items-center justify-center gap-3 shadow-[0_8px_0_0_rgba(192,209,0,1)] active:translate-y-1 active:shadow-[0_4px_0_0_rgba(192,209,0,1)] transition-all duration-100 group">
+      NEXT ROUND
+      <span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+    </button>
+  </footer>
+</main>
+
+<!-- ════════════════════════════════════════════
      SCREEN: WORD REVEAL
 ════════════════════════════════════════════ -->
 <main id="screen-word-reveal" class="screen flex-col w-full min-h-screen items-center justify-center px-5 py-8 overflow-hidden">
@@ -651,7 +846,7 @@ let socket = null;
 let gameState = { roomCode: null, playerId: null, isHost: false, isAdmin: false, myName: '', myColor: '#9d00ff' };
 
 // ── Screen router ───────────────────────────────────────────────
-const SCREENS = ['home','create-room','join-room','lobby','admin-config','word-reveal'];
+const SCREENS = ['home','create-room','join-room','lobby','admin-config','word-reveal','discussion','voting','elimination','game-over'];
 function showScreen(name) {
   SCREENS.forEach(id => {
     const el = document.getElementById('screen-' + id);
@@ -819,9 +1014,13 @@ function connectSocket(name, color, roomCode) {
     wrUpdateProgress(readyCount, totalCount);
   });
   socket.on('all-players-ready', (data) => {
-    // TODO: Discussion screen (next step)
-    console.log('all-players-ready', data);
-    alert('All ready! First speaker: ' + data.firstSpeaker.name + '. Discussion screen coming next.');
+    showDiscussion(data);
+  });
+  socket.on('discussion-tick', ({ secondsRemaining }) => {
+    discTick(secondsRemaining);
+  });
+  socket.on('voting-started', (data) => {
+    showVoting(data);
   });
   socket.on('error', ({ message }) => {
     const errId = gameState.isHost ? 'cr-error' : 'jr-error';
@@ -829,6 +1028,15 @@ function connectSocket(name, color, roomCode) {
     el.textContent = message; el.classList.remove('hidden');
     const btn = document.getElementById(gameState.isHost ? 'cr-submit' : 'jr-submit');
     btn.disabled = false;
+  });
+  socket.on('elimination-result', (data) => {
+    showElimination(data);
+  });
+  socket.on('game-over', (data) => {
+    showGameOver(data);
+  });
+  socket.on('voting-tick', ({ secondsRemaining }) => {
+    voteTick(secondsRemaining);
   });
   socket.on('config-updated', ({ config }) => {
     cfgLoadFromObject(config);
@@ -893,6 +1101,265 @@ function lobbyCopy() {
 function lobbyStartGame() {
   if (!socket || !gameState.roomCode) return;
   socket.emit('start-game', { roomCode: gameState.roomCode });
+}
+
+// ── VOTING ────────────────────────────────────────────────────────
+let voteSelected = null;
+let votePlayers = [];
+
+function showVoting(data) {
+  votePlayers = data.players;
+  voteSelected = null;
+  document.getElementById('vote-count-label').textContent = '0 OF ' + votePlayers.length + ' VOTED';
+  document.getElementById('vote-waiting').innerHTML = 'Choose wisely <div class="flex gap-1 animate-pulse"><span class="w-1 h-1 bg-on-surface-variant rounded-full"></span><span class="w-1 h-1 bg-on-surface-variant rounded-full"></span><span class="w-1 h-1 bg-on-surface-variant rounded-full"></span></div>';
+  renderVoteList();
+  showScreen('voting');
+}
+
+function renderVoteList() {
+  const list = document.getElementById('vote-list');
+  list.innerHTML = '';
+  votePlayers.forEach(p => {
+    const isMe = p.name === gameState.myName;
+    const isSel = voteSelected === p.id;
+    const el = document.createElement(isMe ? 'div' : 'button');
+    if (!isMe) {
+      el.onclick = () => voteSelect(p.id);
+    }
+    el.className = isMe
+      ? 'w-full flex items-center justify-between p-6 rounded-2xl bg-surface-container-lowest/50 border border-outline-variant/10 opacity-40'
+      : isSel
+        ? 'w-full relative p-6 rounded-2xl bg-primary-container/20 border-2 border-secondary-container transition-all duration-150'
+        : 'w-full flex items-center justify-between p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 active:scale-95 transition-all duration-150';
+    if (isSel) el.style.boxShadow = '0 0 25px rgba(223,183,255,0.2),inset 0 0 10px rgba(223,183,255,0.1)';
+    el.innerHTML = isMe
+      ? `<div class="flex items-center gap-4"><div class="w-3 h-3 rounded-full" style="background:${p.color}"></div><div class="flex flex-col text-left"><span class="font-headline-sm text-headline-sm">${p.name}</span><span class="font-label-bold text-[10px] tracking-widest text-on-surface-variant uppercase mt-1">(YOU)</span></div></div>`
+      : isSel
+        ? `<div class="flex items-center justify-between mb-1"><div class="flex items-center gap-4"><div class="w-3 h-3 rounded-full" style="background:${p.color}"></div><span class="font-headline-sm text-headline-sm text-secondary-container">${p.name}</span></div><span class="material-symbols-outlined text-secondary-container" style="font-variation-settings:'FILL' 1">check_circle</span></div><div class="text-left"><span class="font-label-bold text-label-bold text-secondary-container/80 italic lowercase tracking-wider">is ${p.name.toLowerCase()} dogla?</span></div>`
+        : `<div class="flex items-center gap-4"><div class="w-3 h-3 rounded-full" style="background:${p.color}"></div><span class="font-headline-sm text-headline-sm">${p.name}</span></div>`;
+    list.appendChild(el);
+  });
+}
+
+function voteSelect(playerId) {
+  if (voteSelected) return; // already voted
+  voteSelected = playerId;
+  renderVoteList();
+  if (!socket || !gameState.roomCode) return;
+  socket.emit('submit-vote', { roomCode: gameState.roomCode, targetId: playerId });
+  document.getElementById('vote-waiting').textContent = 'Vote submitted! Waiting for others...';
+}
+
+function voteTick(sec) {
+  const m = String(Math.floor(sec / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
+  document.getElementById('vote-timer').textContent = `${m}:${s}`;
+  document.getElementById('vote-timer').style.color = sec <= 10 ? '#ffb4ab' : '';
+}
+
+// ── ELIMINATION RESULT ──────────────────────────────────────────────
+let elimContinueGame = true;
+
+function showElimination(data) {
+  const { eliminatedPlayer, wasImposter, continueGame } = data;
+  elimContinueGame = continueGame;
+
+  document.getElementById('elim-name').textContent = eliminatedPlayer.name;
+
+  const isDogla = wasImposter === true;
+  const hidden   = wasImposter === null;
+
+  // Circle colour + icon
+  const circle = document.getElementById('elim-circle');
+  if (isDogla) {
+    circle.style.background = '#dbee00';
+    circle.style.boxShadow  = '0 0 60px rgba(221,238,0,0.4),inset 0 0 20px rgba(221,238,0,0.2)';
+    document.getElementById('elim-icon').textContent = 'sentiment_dissatisfied';
+    document.getElementById('elim-icon').style.color = '#2e3300';
+  } else if (hidden) {
+    circle.style.background = '#36333e';
+    circle.style.boxShadow  = '0 0 40px rgba(154,140,162,0.3)';
+    document.getElementById('elim-icon').textContent = 'help';
+    document.getElementById('elim-icon').style.color = '#9a8ca2';
+  } else {
+    circle.style.background = '#93000a';
+    circle.style.boxShadow  = '0 0 60px rgba(255,180,171,0.4),inset 0 0 20px rgba(255,180,171,0.2)';
+    document.getElementById('elim-icon').textContent = 'sentiment_sad';
+    document.getElementById('elim-icon').style.color = '#ffdad6';
+  }
+
+  // Verdict text
+  const verdict = isDogla
+    ? 'WAS THE DOGLA! 👺'
+    : hidden
+      ? 'HAS BEEN ELIMINATED 😶'
+      : 'WAS INNOCENT! 😇';
+  document.getElementById('elim-verdict').textContent = verdict;
+
+  // Next button label
+  const btn = document.getElementById('elim-next-btn');
+  btn.innerHTML = continueGame
+    ? 'NEXT ROUND <span class="material-symbols-outlined text-[20px]">arrow_forward</span>'
+    : 'SEE RESULTS <span class="material-symbols-outlined text-[20px]">emoji_events</span>';
+
+  showScreen('elimination');
+}
+
+function elimNext() {
+  // If game continues → go back to lobby for next round word-reveal
+  // Server will emit game-started again for next round
+  // If game over → handled by game-over event
+  if (!elimContinueGame) {
+    // Will be navigated by game-over event
+    document.getElementById('elim-next-btn').disabled = true;
+    document.getElementById('elim-next-btn').textContent = 'Waiting...';
+  } else {
+    showScreen('lobby');
+  }
+}
+
+// ── GAME OVER ────────────────────────────────────────────────────────
+let goLastData = null;
+
+function showGameOver(data) {
+  goLastData = data;
+  const { reason, imposters, winners, liarText } = data;
+  const innocentsWin = reason === 'innocents_win';
+
+  // Background + particles
+  const bg = document.getElementById('go-bg');
+  const particles = document.getElementById('go-particles');
+  if (innocentsWin) {
+    bg.style.background = 'radial-gradient(circle at 50% 50%, rgba(157,0,255,0.1) 0%, transparent 70%)';
+    particles.style.display = 'block';
+  } else {
+    bg.style.background = 'radial-gradient(circle at 50% 30%, rgba(157,0,255,0.35) 0%, #14121b 70%)';
+    particles.style.display = 'none';
+  }
+
+  // Title
+  const title = document.getElementById('go-title');
+  if (innocentsWin) {
+    title.textContent = 'INNOCENTS WIN!';
+    title.style.color = '#dbee00';
+    title.style.textShadow = '0 0 20px rgba(219,238,0,0.6)';
+  } else {
+    title.innerHTML = 'KON DOGLA...<br><span style="color:#ffb4ab;font-style:italic">SABKA 😈</span>';
+    title.style.color = '#e6e0ee';
+    title.style.textShadow = '0 0 15px rgba(255,0,0,0.4)';
+  }
+
+  // Liar text
+  document.getElementById('go-liar-text').textContent = innocentsWin ? liarText : 'The Imposters Fooled Everyone!';
+
+  // Stats
+  document.getElementById('go-stat-imposters').textContent = imposters.length;
+  document.getElementById('go-stat-survivors').textContent = innocentsWin ? winners.length : imposters.length;
+  document.getElementById('go-stat-word').textContent = data.word || '?';
+
+  // Imposter cards
+  const grid = document.getElementById('go-liars-grid');
+  grid.innerHTML = '';
+  grid.className = imposters.length === 1 ? 'w-full grid grid-cols-1 gap-4' : 'w-full grid grid-cols-2 gap-4';
+  imposters.forEach((imp, i) => {
+    const accentColor = i === 0 ? '#dbee00' : '#00dbe9';
+    const textColor = i === 0 ? '#2e3300' : '#002022';
+    const card = document.createElement('div');
+    card.className = 'relative p-6 rounded-[28px] flex flex-col items-center gap-4 overflow-hidden border-t-4';
+    card.style.cssText = `background:linear-gradient(135deg,#1c1a24,#211e28);border-top-color:${accentColor};box-shadow:0 0 40px ${accentColor}44,inset 0 0 20px ${accentColor}11`;
+    card.innerHTML = `
+      <div class="absolute top-0 right-0 px-3 py-1 rounded-bl-2xl font-label-bold text-[10px] uppercase tracking-widest" style="background:${accentColor};color:${textColor}">The Dogla</div>
+      <div class="relative w-20 h-20 flex items-center justify-center">
+        <div class="absolute inset-0 rounded-full border-4 border-dashed opacity-40 go-spin" style="border-color:${accentColor}"></div>
+        <div class="w-16 h-16 rounded-full flex items-center justify-center shadow-lg" style="background:${accentColor}">
+          <span class="material-symbols-outlined text-4xl" style="color:${textColor};font-variation-settings:'FILL' 1">person</span>
+        </div>
+        <div class="absolute -bottom-1 -right-1 rounded-full p-1 border-2" style="background:#14121b;border-color:${accentColor};color:${accentColor}">
+          <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1">local_fire_department</span>
+        </div>
+      </div>
+      <div class="text-center">
+        <h2 class="font-headline-md text-headline-md" style="color:${accentColor}">${imp.name}</h2>
+        <span class="font-label-bold text-label-bold uppercase px-4 py-1 rounded-full mt-1 inline-block" style="background:${accentColor}22;color:${accentColor}">LIAR REVEALED</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  showScreen('game-over');
+}
+
+function goPlayAgain() {
+  if (!socket || !gameState.roomCode) { showScreen('home'); return; }
+  // Host re-triggers start-game; everyone goes back to word-reveal
+  if (gameState.isHost) {
+    socket.emit('start-game', { roomCode: gameState.roomCode });
+  } else {
+    // Non-host waits for new game-started event; send them to lobby
+    showScreen('lobby');
+  }
+}
+
+function goLeave() {
+  if (socket) socket.disconnect();
+  socket = null;
+  gameState = { roomCode: null, playerId: null, isHost: false, isAdmin: false, myName: '', myColor: '#9d00ff' };
+  showScreen('home');
+}
+
+// ── VOTING TICK (wire into socket) ──────────────────────────────────────
+// Note: voting-tick wired below in connectSocket but the handler calls voteTick
+
+// ── DISCUSSION ───────────────────────────────────────────────────────
+function showDiscussion(data) {
+  const speaker = data.firstSpeaker;
+  // Spotlight colour driven by speaker's colour
+  const c = speaker.color || '#ff6b6b';
+  document.getElementById('disc-bg').style.background =
+    `radial-gradient(ellipse at center, ${c}44 0%, #14121b 70%)`;
+  document.getElementById('disc-speaker-dot').style.background = c;
+  document.getElementById('disc-speaker-dot').style.boxShadow = `0 0 15px ${c}88`;
+  document.getElementById('disc-speaker-name').textContent = speaker.name;
+
+  // First speaker reveal phase
+  document.getElementById('disc-phase-icon').textContent = 'mic';
+  document.getElementById('disc-phase-label').textContent = 'First to Speak';
+  document.getElementById('disc-timer').textContent = '--:--';
+  document.getElementById('disc-hint').textContent = 'Say one clue word related to the topic — no cheating!';
+  document.getElementById('disc-vote-wrap').classList.add('opacity-0', 'pointer-events-none');
+
+  showScreen('discussion');
+
+  // After 3s, transition into the live countdown phase
+  setTimeout(() => {
+    document.getElementById('disc-phase-icon').textContent = 'timer';
+    document.getElementById('disc-phase-label').textContent = 'Discussion';
+    document.getElementById('disc-vote-wrap').classList.remove('opacity-0', 'pointer-events-none');
+  }, 3000);
+}
+
+function discTick(sec) {
+  const m = String(Math.floor(sec / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
+  document.getElementById('disc-timer').textContent = `${m}:${s}`;
+  // Warn red when ≤ 10s
+  document.getElementById('disc-timer').style.color = sec <= 10 ? '#ffb4ab' : '';
+  document.getElementById('disc-timer').style.textShadow = sec <= 10
+    ? '0 0 20px rgba(255,180,171,0.8)' : '';
+}
+
+function discGoToVote() {
+  if (!socket || !gameState.roomCode) return;
+  socket.emit('go-to-vote', { roomCode: gameState.roomCode });
+  document.getElementById('disc-vote-btn').disabled = true;
+  document.getElementById('disc-vote-btn').textContent = 'Moving to vote...';
+}
+
+// ── VOTING placeholder (next screen)
+function showVoting(data) {
+  // TODO: Voting screen
+  console.log('voting-started', data);
+  alert('Voting phase starting! ' + data.players.length + ' players alive.');
 }
 
 // ── WORD REVEAL ───────────────────────────────────────────────────────
