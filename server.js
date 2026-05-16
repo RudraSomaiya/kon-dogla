@@ -141,7 +141,7 @@ io.on('connection', (socket) => {
     }
 
     // If this is the original host placeholder (REST-created), update ID
-    if (room.hostId === 'pending' && isHost) room.hostId = socket.id;
+    if (room.hostId === 'pending' && player.isHost) room.hostId = socket.id;
 
     socket.join(roomCode);
     socket.data.roomCode = roomCode;
