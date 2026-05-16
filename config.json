@@ -1,0 +1,14 @@
+{
+  "numImposters": 1,
+  "revealResultOnElimination": true,
+  "discussionTimerSeconds": 120,
+  "votingTimerSeconds": 60,
+  "minPlayers": 3,
+  "words": [
+    { "word": "Pizza", "hint": "It's Italian and round" },
+    { "word": "Cricket", "hint": "Played with a bat and ball" },
+    { "word": "Mango", "hint": "King of fruits" },
+    { "word": "Monsoon", "hint": "Wet season" },
+    { "word": "Chai", "hint": "Hot beverage" }
+  ]
+}
