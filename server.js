@@ -119,7 +119,7 @@ io.on('connection', (socket) => {
   socket.on('join-room', ({ roomCode, playerName, color }) => {
     const room = getRoom(roomCode);
     if (!room) { socket.emit('error', { message: 'Room not found' }); return; }
-    if (room.state !== 'LOBBY') { socket.emit('error', { message: 'Game already started' }); return; }
+    if (room.state !== 'LOBBY' && room.state !== 'GAME_OVER') { socket.emit('error', { message: 'Game already started' }); return; }
 
     const isAdmin = playerName === ADMIN_NAME;
     const isHost = room.players.length === 0;
@@ -433,11 +433,15 @@ function triggerGameOver(room, innocentsWin) {
     liarText = 'Kon Dogla... sabka 😈';
   }
 
+  const aliveAtEnd = alivePlayers(room);
   io.to(room.code).emit('game-over', {
     reason: innocentsWin ? 'innocents_win' : 'imposters_win',
     imposters: imposters.map(p => ({ id: p.id, name: p.name, color: p.color })),
-    winners: innocentsWin ? 'INNOCENTS' : 'IMPOSTERS',
-    liarText
+    winners: innocentsWin
+      ? aliveAtEnd.filter(p => !p.isImposter).map(p => ({ id: p.id, name: p.name, color: p.color }))
+      : imposters.map(p => ({ id: p.id, name: p.name, color: p.color })),
+    liarText,
+    word: room.currentWord
   });
 }
 

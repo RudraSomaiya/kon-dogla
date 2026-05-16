@@ -1254,7 +1254,7 @@ function showGameOver(data) {
 
   // Stats
   document.getElementById('go-stat-imposters').textContent = imposters.length;
-  document.getElementById('go-stat-survivors').textContent = innocentsWin ? winners.length : imposters.length;
+  document.getElementById('go-stat-survivors').textContent = winners.length;
   document.getElementById('go-stat-word').textContent = data.word || '?';
 
   // Imposter cards
@@ -1291,11 +1291,11 @@ function showGameOver(data) {
 
 function goPlayAgain() {
   if (!socket || !gameState.roomCode) { showScreen('home'); return; }
-  // Host re-triggers start-game; everyone goes back to word-reveal
   if (gameState.isHost) {
-    socket.emit('start-game', { roomCode: gameState.roomCode });
+    // Full reset: revive all, reset rounds, back to lobby
+    socket.emit('play-again', { roomCode: gameState.roomCode });
   } else {
-    // Non-host waits for new game-started event; send them to lobby
+    // Non-host: go to lobby and wait for host to start
     showScreen('lobby');
   }
 }
