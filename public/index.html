@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kon Dogla? — Who's the Liar?</title>
+<meta name="description" content="Kon Dogla? is a real-time multiplayer word imposter party game. Create or join a room and find the liar!"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-tertiary-fixed-variant": "#004f54",
+          "primary-fixed": "#f1daff",
+          "surface-dim": "#14121b",
+          "on-secondary": "#2e3300",
+          "secondary-fixed": "#dbee00",
+          "outline": "#9a8ca2",
+          "secondary-fixed-dim": "#c0d100",
+          "on-secondary-container": "#616a00",
+          "primary": "#dfb7ff",
+          "surface-container": "#211e28",
+          "surface-container-low": "#1c1a24",
+          "tertiary-fixed-dim": "#00dbe9",
+          "on-error-container": "#ffdad6",
+          "primary-fixed-dim": "#dfb7ff",
+          "on-tertiary-fixed": "#002022",
+          "error": "#ffb4ab",
+          "inverse-on-surface": "#322f39",
+          "inverse-surface": "#e6e0ee",
+          "on-surface-variant": "#d1c1d9",
+          "surface-tint": "#dfb7ff",
+          "on-surface": "#e6e0ee",
+          "tertiary-fixed": "#7df4ff",
+          "surface-container-lowest": "#0f0d16",
+          "tertiary": "#00dbe9",
+          "error-container": "#93000a",
+          "on-primary-fixed": "#2d004f",
+          "secondary-container": "#dbee00",
+          "primary-container": "#9d00ff",
+          "surface": "#14121b",
+          "outline-variant": "#4e4356",
+          "on-error": "#690005",
+          "surface-container-high": "#2b2933",
+          "on-secondary-fixed-variant": "#444b00",
+          "inverse-primary": "#8c00e5",
+          "on-background": "#e6e0ee",
+          "on-tertiary-container": "#aff8ff",
+          "secondary": "#ffffff",
+          "surface-bright": "#3b3842",
+          "on-primary-fixed-variant": "#6b00b0",
+          "on-secondary-fixed": "#1a1e00",
+          "tertiary-container": "#00767e",
+          "background": "#14121b",
+          "surface-variant": "#36333e",
+          "on-primary": "#4b007e",
+          "on-tertiary": "#00363a",
+          "on-primary-container": "#f7e5ff",
+          "surface-container-highest": "#36333e"
+        },
+        borderRadius: {
+          DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"
+        },
+        spacing: {
+          "container-margin-mobile": "20px",
+          "container-margin-desktop": "40px",
+          "section-gap": "32px",
+          "gutter": "16px",
+          "base": "8px"
+        },
+        fontFamily: {
+          "display-lg-mobile": ["Bricolage Grotesque"],
+          "display-lg": ["Bricolage Grotesque"],
+          "headline-md": ["Bricolage Grotesque"],
+          "label-bold": ["Plus Jakarta Sans"],
+          "body-lg": ["Plus Jakarta Sans"],
+          "headline-sm": ["Bricolage Grotesque"],
+          "body-md": ["Plus Jakarta Sans"]
+        },
+        fontSize: {
+          "display-lg-mobile": ["36px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "800" }],
+          "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "800" }],
+          "headline-md": ["32px", { lineHeight: "1.2", fontWeight: "700" }],
+          "label-bold": ["14px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "700" }],
+          "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "500" }],
+          "headline-sm": ["24px", { lineHeight: "1.2", fontWeight: "700" }],
+          "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .noise-bg {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+  body { min-height: max(884px, 100dvh); }
+
+  /* Screen transitions */
+  .screen { display: none; }
+  .screen.active { display: flex; }
+
+  /* Glass card */
+  .glass-card {
+    background: rgba(157,0,255,0.15);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(223,183,255,0.3);
+    border-left: 1px solid rgba(223,183,255,0.1);
+  }
+  .neon-shadow { box-shadow: 0 0 20px rgba(219,238,0,0.4); }
+  .tactile-btn { box-shadow: 0 4px 0 rgba(0,0,0,0.5); transition: all 0.1s; }
+  .tactile-btn:active { box-shadow: none; transform: translateY(4px) scale(0.98); }
+  .swatch-active { outline: 3px solid #e6e0ee; outline-offset: 3px; }
+  input[type=color] { opacity:0; position:absolute; width:100%; height:100%; cursor:pointer; }
+  .hide-scrollbar::-webkit-scrollbar { display:none; }
+  .hide-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+
+  /* Floating emoji animation */
+  @keyframes floatUp {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(-120px) rotate(20deg); opacity: 0; }
+  }
+  .emoji-float {
+    position: fixed;
+    pointer-events: none;
+    font-size: 2rem;
+    animation: floatUp 1.2s ease-out forwards;
+    z-index: 999;
+  }
+
+  /* Wiggle on logo hover */
+  @keyframes wiggle {
+    0%,100% { transform: rotate(-2deg); }
+    50%      { transform: rotate(2deg); }
+  }
+  .logo-title:hover { animation: wiggle 0.3s ease-in-out 3; }
+
+  /* Pulse glow */
+  @keyframes pulseGlow {
+    0%,100% { opacity: 0.5; }
+    50%      { opacity: 0.9; }
+  }
+  .pulse-glow { animation: pulseGlow 3s ease-in-out infinite; }
+
+  /* Lobby player card pop-in */
+  @keyframes popIn {
+    0%   { transform: scale(0.8) translateY(12px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .player-card { animation: popIn 0.35s cubic-bezier(.34,1.56,.64,1) both; }
+
+  /* Toggle switch */
+  .toggle-track { transition: background 0.2s; }
+  .toggle-thumb { transition: transform 0.2s; }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col noise-bg overflow-x-hidden relative">
+
+<!-- Ambient Glow Effects -->
+<div class="fixed top-0 left-0 w-full h-1/2 bg-gradient-to-b from-primary-container/20 to-transparent pointer-events-none -z-10 pulse-glow"></div>
+<div class="fixed bottom-0 right-0 w-64 h-64 bg-secondary-container/10 blur-[100px] rounded-full pointer-events-none -z-10"></div>
+<div class="fixed top-1/3 left-0 w-48 h-48 bg-tertiary/5 blur-[80px] rounded-full pointer-events-none -z-10"></div>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: HOME
+════════════════════════════════════════════ -->
+<main id="screen-home" class="screen active flex-grow flex-col items-center justify-center px-container-margin-mobile pt-32 pb-32 max-w-[1200px] mx-auto w-full relative z-10">
+
+  <!-- Hero -->
+  <div class="flex flex-col items-center justify-center text-center space-y-6 mb-16">
+    <div class="relative group">
+      <div class="absolute inset-0 bg-secondary-container/20 blur-2xl rounded-full scale-150 group-hover:scale-[1.75] transition-transform duration-500"></div>
+      <h1 id="logo-title" class="logo-title font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-secondary-container italic tracking-tighter drop-shadow-[0_0_15px_rgba(219,238,0,0.6)] relative z-10 transform -rotate-2 cursor-default select-none">
+        KON DOGLA?
+      </h1>
+    </div>
+    <p class="font-headline-sm text-headline-sm text-on-surface-variant opacity-80 max-w-sm">
+      Who's the Liar in the room?
+    </p>
+    <!-- Decorative role chips -->
+    <div class="flex gap-3 mt-2">
+      <span class="px-3 py-1 rounded-full bg-primary-container/30 border border-primary/20 text-primary text-xs font-label-bold tracking-widest">INNOCENT 😇</span>
+      <span class="px-3 py-1 rounded-full bg-error-container/30 border border-error/20 text-error text-xs font-label-bold tracking-widest">IMPOSTER 👺</span>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex flex-col w-full max-w-xs space-y-section-gap">
+
+    <!-- Create Room -->
+    <button id="btn-create-room" onclick="showScreen('create-room')" class="w-full relative group hover:scale-105 active:scale-95 transition-all duration-200">
+      <div class="absolute inset-0 bg-primary-container rounded-2xl blur-lg opacity-50 group-hover:opacity-80 transition-opacity"></div>
+      <div class="relative bg-gradient-to-br from-primary-container to-on-primary-fixed-variant text-on-primary-container font-headline-md text-headline-md py-6 px-8 rounded-2xl border-2 border-primary-container shadow-[0_8px_0_0_rgba(75,0,126,1)] active:shadow-[0_0px_0_0_rgba(75,0,126,1)] active:translate-y-2 flex items-center justify-center space-x-3 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-white/20"></div>
+        <span class="material-symbols-outlined text-4xl">add_circle</span>
+        <span>CREATE ROOM</span>
+      </div>
+    </button>
+
+    <!-- Join Room -->
+    <button id="btn-join-room" onclick="showScreen('join-room')" class="w-full relative group hover:scale-105 active:scale-95 transition-all duration-200">
+      <div class="absolute inset-0 bg-secondary-container rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity"></div>
+      <div class="relative bg-gradient-to-br from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-md text-headline-md py-6 px-8 rounded-2xl border-2 border-secondary-container shadow-[0_8px_0_0_rgba(97,106,0,1)] active:shadow-[0_0px_0_0_rgba(97,106,0,1)] active:translate-y-2 flex items-center justify-center space-x-3 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-white/30"></div>
+        <span class="material-symbols-outlined text-4xl">login</span>
+        <span>JOIN ROOM</span>
+      </div>
+    </button>
+
+  </div>
+</main>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: CREATE ROOM
+════════════════════════════════════════════ -->
+<main id="screen-create-room" class="screen flex-col w-full min-h-screen overflow-y-auto">
+  <!-- Top bar -->
+  <header class="flex items-center justify-between px-5 py-4 w-full z-40">
+    <button onclick="showScreen('home')" class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors active:scale-95">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">arrow_back</span>
+    </button>
+    <div class="text-on-surface-variant font-label-bold text-label-bold tracking-widest uppercase">Create Room</div>
+    <div class="w-12 h-12"></div>
+  </header>
+  <div class="flex-1 flex flex-col px-5 gap-8 pb-36 relative z-10">
+    <!-- Heading -->
+    <div class="flex flex-col gap-2 mt-2">
+      <h1 class="font-display-lg-mobile text-display-lg-mobile text-secondary-container drop-shadow-[0_0_15px_rgba(219,238,0,0.3)]">Create Your<br/>Identity</h1>
+      <p class="text-on-surface-variant font-body-md text-body-md max-w-[280px]">Define your vibe before entering the arena.</p>
+    </div>
+    <!-- Live preview -->
+    <section class="relative w-full aspect-[4/3] rounded-[2rem] bg-surface-container/60 backdrop-blur-xl border border-primary/20 overflow-hidden flex flex-col items-center justify-center gap-4 shadow-[0_10px_40px_rgba(157,0,255,0.15)]">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(219,238,0,0.1)_0%,transparent_70%)]"></div>
+      <div id="cr-avatar" class="relative w-28 h-28 rounded-full bg-surface-container-highest border-[3px] border-secondary-container shadow-[0_0_20px_rgba(219,238,0,0.4)] flex items-center justify-center z-10 transition-all duration-300">
+        <span class="material-symbols-outlined text-[64px] text-secondary-container" style="font-variation-settings:'FILL' 1">person</span>
+      </div>
+      <div class="z-10 bg-background/80 backdrop-blur-md px-6 py-2 rounded-full border border-surface-variant">
+        <span id="cr-name-preview" class="font-headline-sm text-headline-sm text-on-surface">Alias</span>
+      </div>
+    </section>
+    <!-- Name input -->
+    <div class="flex flex-col gap-3">
+      <label class="font-label-bold text-label-bold text-primary" for="cr-name">Display Name</label>
+      <input id="cr-name" type="text" maxlength="20" placeholder="Enter your alias..." oninput="crUpdatePreview()"
+        class="w-full bg-surface-container-high border-2 border-surface-variant text-on-surface font-body-lg text-body-lg rounded-xl px-4 py-4 focus:outline-none focus:border-secondary-container transition-all placeholder:text-outline shadow-inner"/>
+    </div>
+    <!-- Color swatches -->
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <label class="font-label-bold text-label-bold text-primary">Pick Your Vibe</label>
+        <span class="text-xs text-on-surface-variant">8 Options</span>
+      </div>
+      <div id="cr-swatches" class="grid grid-cols-4 gap-4">
+        <!-- filled by JS -->
+      </div>
+    </div>
+    <!-- Error -->
+    <p id="cr-error" class="text-error font-body-md text-body-md hidden"></p>
+  </div>
+  <!-- Sticky CTA -->
+  <div class="fixed bottom-0 w-full px-5 pb-8 pt-4 bg-gradient-to-t from-background via-background/90 to-transparent z-40">
+    <button id="cr-submit" onclick="crSubmit()"
+      class="w-full bg-gradient-to-r from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-sm text-headline-sm py-5 rounded-2xl shadow-[0_6px_0_#9d00ff] active:translate-y-[6px] active:shadow-none transition-all flex items-center justify-center gap-2">
+      <span>START ROOM</span>
+      <span class="material-symbols-outlined text-[28px]">arrow_forward</span>
+    </button>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: JOIN ROOM
+════════════════════════════════════════════ -->
+<main id="screen-join-room" class="screen flex-col w-full min-h-screen overflow-y-auto">
+  <!-- Top bar -->
+  <nav class="flex justify-between items-center px-5 py-4 w-full z-40">
+    <button onclick="showScreen('home')" class="text-on-surface-variant hover:text-primary flex items-center justify-center p-2 rounded-full hover:bg-surface-container active:scale-95 transition-colors">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">arrow_back</span>
+    </button>
+    <h1 class="font-display-lg-mobile text-display-lg-mobile text-secondary-container italic tracking-tighter drop-shadow-[0_0_10px_rgba(219,238,0,0.5)]">JOIN</h1>
+    <div class="w-10"></div>
+  </nav>
+  <div class="flex-1 flex flex-col px-5 gap-8 pb-36 items-center mt-2">
+    <!-- Identity card -->
+    <section class="w-full max-w-md">
+      <div class="glass-card rounded-3xl p-6 flex flex-col items-center gap-4 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-container/30 rounded-full blur-2xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-tertiary-container/20 rounded-full blur-2xl"></div>
+        <div id="jr-avatar" class="w-24 h-24 rounded-full bg-primary-container flex items-center justify-center shadow-[0_0_20px_rgba(157,0,255,0.4)] border-2 border-primary/50 relative z-10 transition-all duration-300">
+          <span class="material-symbols-outlined text-5xl text-on-primary-container" style="font-variation-settings:'FILL' 1">face</span>
+        </div>
+        <div class="text-center relative z-10">
+          <h2 id="jr-name-preview" class="font-headline-md text-headline-md text-on-surface">Player One</h2>
+          <p class="font-label-bold text-label-bold text-primary mt-1">Ready to cause mischief</p>
+        </div>
+      </div>
+    </section>
+    <!-- Room code boxes -->
+    <section class="w-full max-w-md flex flex-col gap-2">
+      <label class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest pl-2">Room Code</label>
+      <div id="jr-code-boxes" class="flex justify-between gap-3 w-full">
+        <!-- 4 boxes filled by JS -->
+      </div>
+    </section>
+    <!-- Alias input -->
+    <section class="w-full max-w-md flex flex-col gap-2">
+      <label class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest pl-2" for="jr-name">Enter Alias</label>
+      <input id="jr-name" type="text" maxlength="20" placeholder="Your game name..." oninput="jrUpdatePreview()"
+        class="w-full bg-surface-container rounded-2xl border-2 border-outline-variant px-6 py-4 font-body-lg text-body-lg text-on-surface focus:border-secondary-container focus:ring-0 transition-colors shadow-inner"/>
+    </section>
+    <!-- Color swatches -->
+    <section class="w-full max-w-md flex flex-col gap-3">
+      <label class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest pl-2">Choose Vibe</label>
+      <div id="jr-swatches" class="grid grid-cols-4 gap-3"></div>
+    </section>
+    <!-- Error -->
+    <p id="jr-error" class="text-error font-body-md text-body-md hidden w-full max-w-md"></p>
+  </div>
+  <!-- Sticky CTA -->
+  <div class="fixed bottom-0 w-full max-w-md left-1/2 -translate-x-1/2 px-5 pb-8 pt-4 bg-gradient-to-t from-background via-background/90 to-transparent z-40">
+    <button id="jr-submit" onclick="jrSubmit()"
+      class="w-full bg-gradient-to-r from-secondary-container to-secondary-fixed-dim rounded-2xl py-5 px-6 flex justify-between items-center tactile-btn neon-shadow">
+      <span class="font-headline-sm text-headline-sm text-on-secondary-fixed uppercase tracking-wider">JOIN ROOM</span>
+      <span class="material-symbols-outlined text-on-secondary-fixed text-3xl" style="font-variation-settings:'FILL' 1">login</span>
+    </button>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: LOBBY
+════════════════════════════════════════════ -->
+<main id="screen-lobby" class="screen flex-col w-full min-h-screen overflow-y-auto pb-36">
+  <!-- Top bar -->
+  <header class="flex justify-between items-center px-5 py-4 w-full">
+    <h1 class="font-display-lg-mobile text-display-lg-mobile text-secondary-container italic tracking-tighter drop-shadow-[0_0_10px_rgba(219,238,0,0.5)]">KON DOGLA?</h1>
+    <!-- Admin config button (hidden unless admin) -->
+    <button id="lobby-config-btn" onclick="showScreen('admin-config')" class="hidden p-2 rounded-full bg-surface-container-high text-primary hover:bg-surface-variant transition-colors active:scale-95">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">settings</span>
+    </button>
+  </header>
+
+  <div class="flex-1 flex flex-col px-5 gap-8">
+    <!-- Room code card -->
+    <section class="flex flex-col items-center mt-4">
+      <h2 class="font-label-bold text-label-bold text-primary tracking-widest uppercase mb-4 opacity-80">Room Code</h2>
+      <div class="relative group cursor-pointer active:scale-95 transition-transform duration-150" onclick="lobbyкопировать()">
+        <div class="absolute inset-0 bg-primary-container rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
+        <div class="relative bg-surface-container/60 backdrop-blur-md border border-primary/20 rounded-3xl py-6 px-10 flex items-center gap-5 shadow-[0_8px_32px_rgba(157,0,255,0.2)]">
+          <span id="lobby-code" class="font-display-lg text-display-lg text-secondary-container tracking-widest drop-shadow-[0_0_15px_rgba(219,238,0,0.6)]">----</span>
+          <button onclick="event.stopPropagation();lobbyCopy()" class="p-3 bg-surface-variant rounded-full text-secondary-container hover:bg-surface-bright transition-colors">
+            <span class="material-symbols-outlined text-[28px]" style="font-variation-settings:'FILL' 1">content_copy</span>
+          </button>
+        </div>
+      </div>
+      <p class="mt-4 font-body-md text-body-md text-on-surface-variant text-center max-w-[280px]">Share this code with your friends so they can join the chaos.</p>
+    </section>
+
+    <!-- Player grid -->
+    <section class="flex-1">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-headline-sm text-headline-sm text-on-surface">Players Joined</h3>
+        <span id="lobby-count" class="bg-surface-container-high px-4 py-2 rounded-full font-label-bold text-label-bold text-primary">0 / ?</span>
+      </div>
+      <div id="lobby-players" class="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <!-- Injected by JS -->
+      </div>
+      <!-- Waiting dots -->
+      <div class="mt-8 flex justify-center opacity-50">
+        <div class="flex items-center gap-3 border border-dashed border-outline-variant rounded-full py-3 px-8 bg-surface-container-highest/30">
+          <div class="w-3 h-3 rounded-full bg-outline animate-pulse"></div>
+          <div class="w-3 h-3 rounded-full bg-outline animate-pulse" style="animation-delay:.2s"></div>
+          <div class="w-3 h-3 rounded-full bg-outline animate-pulse" style="animation-delay:.4s"></div>
+          <span id="lobby-waiting-text" class="font-label-bold text-label-bold text-outline ml-2">Waiting for players...</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background via-background to-transparent pt-12 pb-8 px-5 flex justify-center z-40">
+    <!-- HOST: Start Game -->
+    <button id="lobby-start-btn" onclick="lobbyStartGame()" class="hidden w-full max-w-md bg-gradient-to-r from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-sm text-headline-sm py-5 rounded-full shadow-[0_8px_0_rgba(97,106,0,1)] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+      START GAME
+      <span class="material-symbols-outlined text-[28px]" style="font-variation-settings:'FILL' 1">play_arrow</span>
+    </button>
+    <!-- NON-HOST: Waiting -->
+    <button id="lobby-wait-btn" class="hidden w-full max-w-md bg-surface-variant border-2 border-outline-variant text-outline rounded-full py-5 px-8 font-headline-sm text-headline-sm flex items-center justify-center gap-3 cursor-not-allowed opacity-80" disabled>
+      WAITING FOR HOST...
+      <span class="material-symbols-outlined">hourglass_empty</span>
+    </button>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════════════
+     SCREEN: ADMIN CONFIG
+════════════════════════════════════════════ -->
+<main id="screen-admin-config" class="screen flex-col w-full min-h-screen overflow-y-auto pb-36">
+  <!-- Top bar -->
+  <header class="flex items-center justify-between px-5 py-4 w-full">
+    <button onclick="showScreen('lobby')" class="w-12 h-12 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface hover:bg-surface-variant transition-colors active:scale-95">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">arrow_back</span>
+    </button>
+    <h1 class="font-display-lg-mobile text-display-lg-mobile text-secondary-container italic tracking-tighter drop-shadow-[0_0_10px_rgba(219,238,0,0.5)]">KON DOGLA?</h1>
+    <div class="w-12 h-12"></div>
+  </header>
+
+  <div class="w-full max-w-md mx-auto px-5 flex flex-col gap-8 mt-2">
+    <div class="text-center">
+      <h2 class="font-headline-md text-headline-md text-primary drop-shadow-[0_0_15px_rgba(157,0,255,0.6)]">GAME MASTER
+        <span class="block text-secondary-container font-headline-sm text-headline-sm mt-1">CONTROL PANEL</span>
+      </h2>
+    </div>
+
+    <!-- Imposters stepper -->
+    <div class="bg-surface-container/60 backdrop-blur-md rounded-xl border-t border-primary/20 p-5 shadow-[0_8px_30px_rgba(157,0,255,0.1)] flex justify-between items-center relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
+      <span class="font-label-bold text-label-bold text-on-surface uppercase tracking-wider relative z-10">Imposters</span>
+      <div class="flex items-center gap-4 relative z-10 bg-surface-container-highest rounded-full p-1 border border-outline-variant/30">
+        <button onclick="cfgStep('numImposters',-1)" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-secondary-container hover:bg-surface-bright transition-colors active:scale-90">
+          <span class="material-symbols-outlined">remove</span>
+        </button>
+        <span id="cfg-imposters-val" class="font-headline-sm text-headline-sm text-secondary-container w-6 text-center">1</span>
+        <button onclick="cfgStep('numImposters',1)" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-secondary-container hover:bg-surface-bright transition-colors active:scale-90">
+          <span class="material-symbols-outlined">add</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Timers -->
+    <div class="bg-surface-container/60 backdrop-blur-md rounded-xl border-t border-primary/20 p-5 shadow-[0_8px_30px_rgba(157,0,255,0.1)] flex flex-col gap-6 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-tertiary/5 to-transparent pointer-events-none"></div>
+      <!-- Discussion -->
+      <div class="relative z-10 flex flex-col gap-3">
+        <div class="flex justify-between items-end">
+          <span class="font-label-bold text-label-bold text-on-surface uppercase tracking-wider">Discussion Time</span>
+          <span id="cfg-disc-val" class="font-label-bold text-label-bold text-tertiary">120s</span>
+        </div>
+        <input id="cfg-disc-slider" type="range" min="30" max="300" step="10" value="120"
+          oninput="document.getElementById('cfg-disc-val').textContent=this.value+'s'"
+          class="w-full accent-tertiary-container cursor-pointer"/>
+      </div>
+      <!-- Voting -->
+      <div class="relative z-10 flex flex-col gap-3">
+        <div class="flex justify-between items-end">
+          <span class="font-label-bold text-label-bold text-on-surface uppercase tracking-wider">Voting Time</span>
+          <span id="cfg-vote-val" class="font-label-bold text-label-bold text-primary">60s</span>
+        </div>
+        <input id="cfg-vote-slider" type="range" min="15" max="120" step="5" value="60"
+          oninput="document.getElementById('cfg-vote-val').textContent=this.value+'s'"
+          class="w-full accent-primary cursor-pointer"/>
+      </div>
+    </div>
+
+    <!-- Reveal toggle -->
+    <div class="bg-surface-container/60 backdrop-blur-md rounded-xl border-t border-primary/20 p-5 shadow-[0_8px_30px_rgba(157,0,255,0.1)] flex justify-between items-center relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
+      <div class="relative z-10 flex flex-col gap-1 w-3/4">
+        <span class="font-label-bold text-label-bold text-on-surface uppercase tracking-wider">Reveal Role on Death</span>
+        <span class="font-body-md text-body-md text-on-surface-variant text-sm">Show if eliminated player was an imposter.</span>
+      </div>
+      <div id="cfg-reveal-toggle" onclick="cfgToggleReveal()" class="relative z-10 w-14 h-8 rounded-full flex items-center px-1 cursor-pointer shadow-[0_0_15px_rgba(219,238,0,0.3)] toggle-track bg-secondary-container">
+        <div id="cfg-reveal-thumb" class="w-6 h-6 bg-surface rounded-full shadow-md toggle-thumb translate-x-6"></div>
+      </div>
+    </div>
+
+    <!-- Word list -->
+    <div class="bg-surface-container/60 backdrop-blur-md rounded-xl border-t border-primary/20 p-5 shadow-[0_8px_30px_rgba(157,0,255,0.1)] flex flex-col gap-4 relative">
+      <div class="flex justify-between items-center mb-2">
+        <span class="font-label-bold text-label-bold text-on-surface uppercase tracking-wider flex items-center gap-2">
+          <span class="material-symbols-outlined text-tertiary">format_list_bulleted</span>
+          Word List
+        </span>
+        <span id="cfg-word-count" class="bg-primary-container/20 text-primary font-label-bold text-label-bold px-2 py-1 rounded text-xs">0 PAIRS</span>
+      </div>
+      <div id="cfg-word-list" class="flex flex-col gap-3"></div>
+      <button onclick="cfgAddWord()" class="mt-2 w-full py-3 rounded-lg border-2 border-dashed border-tertiary/40 text-tertiary font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-tertiary/10 hover:border-tertiary transition-all">
+        <span class="material-symbols-outlined">add_circle</span> ADD WORD PAIR
+      </button>
+    </div>
+
+    <p id="cfg-error" class="text-error font-body-md text-body-md hidden"></p>
+    <p id="cfg-success" class="text-tertiary font-body-md text-body-md hidden">✓ Config saved!</p>
+  </div>
+
+  <!-- Save CTA -->
+  <div class="fixed bottom-0 w-full max-w-md left-1/2 -translate-x-1/2 px-5 pb-8 pt-4 bg-gradient-to-t from-background via-background/90 to-transparent z-40">
+    <button onclick="cfgSave()" class="w-full bg-gradient-to-r from-secondary-container to-secondary-fixed-dim text-on-secondary font-headline-sm text-headline-sm py-4 rounded-xl shadow-[0_4px_0_#616a00] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center gap-2 uppercase tracking-wide">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">save</span>
+      SAVE &amp; APPLY
+    </button>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════════════
+     BOTTOM NAV — Mobile
+════════════════════════════════════════════ -->
+<nav id="nav-mobile" class="fixed bottom-0 w-full rounded-t-3xl z-50 bg-surface-container/90 backdrop-blur-2xl border-t border-primary/10 shadow-[0_-8px_30px_rgba(157,0,255,0.15)] md:hidden">
+  <div class="flex justify-around items-center w-full h-20 px-4 max-w-[1200px] mx-auto">
+    <button aria-label="Home" onclick="showScreen('home')" class="flex flex-col items-center justify-center text-secondary-container bg-primary-container/20 rounded-xl px-4 py-1 hover:text-primary transition-colors active:scale-90 duration-200">
+      <span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings:'FILL' 1;">home</span>
+      <span class="font-label-bold text-label-bold">Home</span>
+    </button>
+    <button aria-label="How to Play" id="btn-how-mobile" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 duration-200">
+      <span class="material-symbols-outlined text-2xl mb-1">help_center</span>
+      <span class="font-label-bold text-label-bold">How to Play</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════
+     BOTTOM NAV — Desktop
+════════════════════════════════════════════ -->
+<nav id="nav-desktop" class="hidden md:flex fixed bottom-0 w-full z-50 p-container-margin-desktop justify-center pointer-events-none">
+  <div class="bg-surface-container/90 backdrop-blur-2xl border border-primary/10 shadow-[0_8px_30px_rgba(157,0,255,0.15)] rounded-full px-8 py-4 flex space-x-12 pointer-events-auto">
+    <button onclick="showScreen('home')" class="flex items-center space-x-2 text-secondary-container bg-primary-container/20 rounded-full px-6 py-2 hover:text-primary transition-colors active:scale-95 duration-200">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">home</span>
+      <span class="font-label-bold text-label-bold">Home</span>
+    </button>
+    <button id="btn-how-desktop" class="flex items-center space-x-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200 px-4">
+      <span class="material-symbols-outlined">help_center</span>
+      <span class="font-label-bold text-label-bold">How to Play</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════
+     SCRIPT
+════════════════════════════════════════════ -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+// ── Global state ────────────────────────────────────────────────
+let socket = null;
+let gameState = { roomCode: null, playerId: null, isHost: false, isAdmin: false, myName: '', myColor: '#9d00ff' };
+
+// ── Screen router ───────────────────────────────────────────────
+const SCREENS = ['home','create-room','join-room','lobby','admin-config'];
+function showScreen(name) {
+  SCREENS.forEach(id => {
+    const el = document.getElementById('screen-' + id);
+    if (el) el.classList.toggle('active', id === name);
+  });
+  // Bottom nav only visible on Home
+  const onHome = name === 'home';
+  document.getElementById('nav-mobile').classList.toggle('hidden', !onHome);
+  const desk = document.getElementById('nav-desktop');
+  desk.classList.toggle('hidden', !onHome);
+  desk.classList.toggle('md:flex', onHome);
+}
+
+// ── Logo easter egg ─────────────────────────────────────────────
+const EMOJIS = ['👺','😇','🔥','🫣','😈','🎭','❓'];
+document.getElementById('logo-title').addEventListener('click', e => {
+  const el = document.createElement('div');
+  el.className = 'emoji-float';
+  el.textContent = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+  el.style.left = (e.clientX-20)+'px';
+  el.style.top  = (e.clientY-20)+'px';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+});
+
+// ── Color palette ───────────────────────────────────────────────
+const COLORS = ['#9d00ff','#dbee00','#00dbe9','#ffb4ab','#00767e','#8c00e5','#ffffff','#ff6b6b'];
+let crColor = COLORS[0];
+let jrColor = COLORS[0];
+
+function buildSwatches(containerId, getCurrent, onSelect) {
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  COLORS.forEach((c, i) => {
+    if (i < 7) {
+      const btn = document.createElement('button');
+      btn.className = 'aspect-square rounded-full border-2 border-transparent transition-all active:scale-90 tactile-btn';
+      btn.style.background = c;
+      btn.setAttribute('aria-label', 'Select color '+c);
+      btn.onclick = () => { onSelect(c); buildSwatches(containerId, getCurrent, onSelect); };
+      if (getCurrent() === c) btn.classList.add('swatch-active');
+      wrap.appendChild(btn);
+    } else {
+      // Custom picker
+      const btn = document.createElement('button');
+      btn.className = 'aspect-square rounded-full bg-gradient-to-tr from-error via-primary to-secondary-container border-2 border-surface-variant relative overflow-hidden tactile-btn';
+      btn.setAttribute('aria-label', 'Custom color');
+      const icon = document.createElement('span');
+      icon.className = 'material-symbols-outlined text-on-background drop-shadow-md pointer-events-none';
+      icon.textContent = 'palette';
+      const picker = document.createElement('input');
+      picker.type = 'color';
+      picker.value = getCurrent();
+      picker.addEventListener('input', e => { onSelect(e.target.value); buildSwatches(containerId, getCurrent, onSelect); });
+      btn.appendChild(icon); btn.appendChild(picker);
+      wrap.appendChild(btn);
+    }
+  });
+}
+
+// ── CREATE ROOM ─────────────────────────────────────────────────
+function crUpdatePreview() {
+  const name = document.getElementById('cr-name').value.trim() || 'Alias';
+  document.getElementById('cr-name-preview').textContent = name;
+  document.getElementById('cr-avatar').style.borderColor = crColor;
+  document.getElementById('cr-avatar').style.boxShadow = `0 0 20px ${crColor}66`;
+}
+
+async function crSubmit() {
+  const name = document.getElementById('cr-name').value.trim();
+  const errEl = document.getElementById('cr-error');
+  errEl.classList.add('hidden');
+  if (!name) { errEl.textContent = 'Enter a display name!'; errEl.classList.remove('hidden'); return; }
+  const btn = document.getElementById('cr-submit');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    const res = await fetch('/api/room/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ playerName: name, color: crColor }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    gameState.roomCode = data.roomCode;
+    gameState.isHost   = data.isHost;
+    gameState.isAdmin  = data.isAdmin;
+    gameState.myName   = name;
+    gameState.myColor  = crColor;
+    connectSocket(name, crColor, data.roomCode);
+  } catch(e) {
+    errEl.textContent = e.message; errEl.classList.remove('hidden');
+    btn.disabled = false; btn.innerHTML = '<span>START ROOM</span><span class="material-symbols-outlined text-[28px]">arrow_forward</span>';
+  }
+}
+
+// ── JOIN ROOM ───────────────────────────────────────────────────
+function buildCodeBoxes() {
+  const wrap = document.getElementById('jr-code-boxes');
+  wrap.innerHTML = '';
+  for (let i=0; i<4; i++) {
+    const inp = document.createElement('input');
+    inp.type='text'; inp.maxLength=1;
+    inp.setAttribute('aria-label','Room code letter '+(i+1));
+    inp.className='w-full aspect-square bg-surface-container rounded-xl border-2 border-outline-variant text-center font-display-lg-mobile text-display-lg-mobile text-primary uppercase focus:border-secondary-container focus:text-secondary-container transition-colors shadow-inner focus:outline-none';
+    inp.addEventListener('input', e => {
+      e.target.value = e.target.value.toUpperCase();
+      if (e.target.value && inp.nextElementSibling) inp.nextElementSibling.focus();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key==='Backspace' && !inp.value && inp.previousElementSibling) inp.previousElementSibling.focus();
+    });
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData.getData('text')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+      const boxes = wrap.querySelectorAll('input');
+      text.split('').forEach((ch,i) => { if(boxes[i]) boxes[i].value = ch; });
+      if(boxes[text.length-1]) boxes[Math.min(text.length,3)].focus();
+    });
+    wrap.appendChild(inp);
+  }
+}
+
+function jrUpdatePreview() {
+  const name = document.getElementById('jr-name').value.trim() || 'Player One';
+  document.getElementById('jr-name-preview').textContent = name;
+  document.getElementById('jr-avatar').style.background = jrColor;
+}
+
+async function jrSubmit() {
+  const name = document.getElementById('jr-name').value.trim();
+  const boxes = document.querySelectorAll('#jr-code-boxes input');
+  const code  = Array.from(boxes).map(b=>b.value.trim()).join('');
+  const errEl = document.getElementById('jr-error');
+  errEl.classList.add('hidden');
+  if (!name) { errEl.textContent = 'Enter a display name!'; errEl.classList.remove('hidden'); return; }
+  if (code.length !== 4) { errEl.textContent = 'Enter the 4-letter room code!'; errEl.classList.remove('hidden'); return; }
+  const btn = document.getElementById('jr-submit');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/room/join', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ roomCode: code, playerName: name, color: jrColor }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    gameState.roomCode = data.roomCode;
+    gameState.isHost   = false;
+    gameState.isAdmin  = data.isAdmin;
+    gameState.myName   = name;
+    gameState.myColor  = jrColor;
+    connectSocket(name, jrColor, code);
+  } catch(e) {
+    errEl.textContent = e.message; errEl.classList.remove('hidden');
+    btn.disabled = false;
+  }
+}
+
+// ── Socket connection ────────────────────────────────────────────
+function connectSocket(name, color, roomCode) {
+  if (socket) socket.disconnect();
+  socket = io();
+  socket.on('connect', () => {
+    socket.emit('join-room', { roomCode, playerName: name, color });
+  });
+  socket.on('room-update', (data) => {
+    renderLobby(data);
+  });
+  socket.on('game-started', (data) => {
+    // TODO: word reveal screen (next step)
+    console.log('game-started', data);
+  });
+  socket.on('error', ({ message }) => {
+    const errId = gameState.isHost ? 'cr-error' : 'jr-error';
+    const el = document.getElementById(errId);
+    el.textContent = message; el.classList.remove('hidden');
+    const btn = document.getElementById(gameState.isHost ? 'cr-submit' : 'jr-submit');
+    btn.disabled = false;
+  });
+  socket.on('config-updated', ({ config }) => {
+    cfgLoadFromObject(config);
+    document.getElementById('cfg-success').classList.remove('hidden');
+    setTimeout(() => document.getElementById('cfg-success').classList.add('hidden'), 2500);
+  });
+}
+
+// ── LOBBY ────────────────────────────────────────────────────────
+function renderLobby(data) {
+  const { players, roomCode } = data;
+  gameState.roomCode = roomCode;
+  document.getElementById('lobby-code').textContent = roomCode;
+  document.getElementById('lobby-count').textContent = players.length + ' joined';
+
+  const grid = document.getElementById('lobby-players');
+  grid.innerHTML = '';
+  players.forEach((p, i) => {
+    const isMe = p.name === gameState.myName;
+    const card = document.createElement('div');
+    card.className = 'relative group player-card';
+    card.style.animationDelay = (i * 60) + 'ms';
+    card.innerHTML = `
+      <div class="absolute inset-0 rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity" style="background:${p.color}"></div>
+      <div class="relative bg-surface-container-low/80 backdrop-blur-xl border rounded-2xl p-5 flex flex-col items-center gap-3 hover:-translate-y-1 transition-transform duration-300" style="border-color:${p.color}22">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center border-2 border-background shadow-lg relative" style="background:${p.color}">
+          <span class="material-symbols-outlined text-background text-[28px]" style="font-variation-settings:'FILL' 1">person</span>
+          ${p.isHost ? '<div class="absolute -top-2 -right-2 bg-secondary-container text-on-secondary-container p-1 rounded-full border-2 border-background"><span class="material-symbols-outlined text-[14px]" style="font-variation-settings:&apos;FILL&apos; 1">star</span></div>' : ''}
+        </div>
+        <div class="text-center">
+          <span class="block font-body-lg text-body-lg text-on-surface">${p.name}${isMe ? ' <span class="text-xs text-primary">(you)</span>' : ''}</span>
+          <span class="font-label-bold text-[11px] uppercase tracking-wider" style="color:${p.color}">${p.isHost ? 'Host' : 'Joined'}</span>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('lobby-waiting-text').textContent = 'Waiting for host to start...';
+
+  // Show correct bottom button
+  const startBtn = document.getElementById('lobby-start-btn');
+  const waitBtn  = document.getElementById('lobby-wait-btn');
+  if (gameState.isHost) {
+    startBtn.classList.remove('hidden'); waitBtn.classList.add('hidden');
+  } else {
+    waitBtn.classList.remove('hidden'); startBtn.classList.add('hidden');
+  }
+
+  // Admin config button
+  if (gameState.isAdmin) document.getElementById('lobby-config-btn').classList.remove('hidden');
+
+  showScreen('lobby');
+}
+
+function lobbyCopy() {
+  navigator.clipboard.writeText(gameState.roomCode).catch(() => {});
+  const el = document.getElementById('lobby-code');
+  el.textContent = 'COPIED!';
+  setTimeout(() => { el.textContent = gameState.roomCode; }, 1200);
+}
+
+function lobbyStartGame() {
+  if (!socket || !gameState.roomCode) return;
+  socket.emit('start-game', { roomCode: gameState.roomCode });
+}
+
+// ── ADMIN CONFIG ─────────────────────────────────────────────────
+let cfgState = { numImposters:1, discussionTimerSeconds:120, votingTimerSeconds:60, revealResultOnElimination:true, words:[] };
+
+async function cfgLoad() {
+  try {
+    const res = await fetch('/api/config');
+    const cfg = await res.json();
+    cfgLoadFromObject(cfg);
+  } catch(e) { console.error('cfg load failed', e); }
+}
+
+function cfgLoadFromObject(cfg) {
+  cfgState = JSON.parse(JSON.stringify(cfg));
+  document.getElementById('cfg-imposters-val').textContent = cfg.numImposters;
+  document.getElementById('cfg-disc-slider').value = cfg.discussionTimerSeconds;
+  document.getElementById('cfg-disc-val').textContent = cfg.discussionTimerSeconds + 's';
+  document.getElementById('cfg-vote-slider').value = cfg.votingTimerSeconds;
+  document.getElementById('cfg-vote-val').textContent = cfg.votingTimerSeconds + 's';
+  const reveal = cfg.revealResultOnElimination;
+  cfgState.revealResultOnElimination = reveal;
+  document.getElementById('cfg-reveal-toggle').style.background = reveal ? '' : '#36333e';
+  document.getElementById('cfg-reveal-thumb').style.transform = reveal ? 'translateX(24px)' : 'translateX(0)';
+  cfgRenderWords();
+}
+
+function cfgStep(field, delta) {
+  cfgState[field] = Math.max(1, (cfgState[field] || 1) + delta);
+  document.getElementById('cfg-imposters-val').textContent = cfgState.numImposters;
+}
+
+function cfgToggleReveal() {
+  cfgState.revealResultOnElimination = !cfgState.revealResultOnElimination;
+  const on = cfgState.revealResultOnElimination;
+  document.getElementById('cfg-reveal-toggle').style.background = on ? '' : '#36333e';
+  document.getElementById('cfg-reveal-thumb').style.transform = on ? 'translateX(24px)' : 'translateX(0)';
+}
+
+function cfgRenderWords() {
+  const list = document.getElementById('cfg-word-list');
+  list.innerHTML = '';
+  cfgState.words.forEach((w, i) => {
+    const row = document.createElement('div');
+    row.className = 'bg-surface-container-high rounded-lg p-3 border border-outline-variant/40 flex items-center gap-3 group hover:border-primary/50 transition-colors';
+    row.innerHTML = `
+      <div class="flex-1 flex flex-col gap-2">
+        <input class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded p-2 font-body-lg text-body-lg text-on-surface focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container transition-all" placeholder="Secret Word" value="${w.word}" oninput="cfgState.words[${i}].word=this.value"/>
+        <input class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded p-2 font-body-lg text-body-lg text-on-surface-variant focus:outline-none focus:border-tertiary focus:ring-1 focus:ring-tertiary transition-all" placeholder="Imposter Hint" value="${w.hint}" oninput="cfgState.words[${i}].hint=this.value"/>
+      </div>
+      <button onclick="cfgRemoveWord(${i})" class="w-10 h-10 flex items-center justify-center text-outline hover:text-error transition-colors rounded-full hover:bg-error/10">
+        <span class="material-symbols-outlined">delete</span>
+      </button>`;
+    list.appendChild(row);
+  });
+  document.getElementById('cfg-word-count').textContent = cfgState.words.length + ' PAIRS';
+}
+
+function cfgAddWord() {
+  cfgState.words.push({ word: '', hint: '' });
+  cfgRenderWords();
+}
+
+function cfgRemoveWord(i) {
+  cfgState.words.splice(i, 1);
+  cfgRenderWords();
+}
+
+function cfgSave() {
+  cfgState.numImposters = parseInt(document.getElementById('cfg-imposters-val').textContent);
+  cfgState.discussionTimerSeconds = parseInt(document.getElementById('cfg-disc-slider').value);
+  cfgState.votingTimerSeconds = parseInt(document.getElementById('cfg-vote-slider').value);
+  const err = document.getElementById('cfg-error');
+  if (cfgState.words.length === 0) { err.textContent = 'Add at least one word pair!'; err.classList.remove('hidden'); return; }
+  err.classList.add('hidden');
+  if (socket && gameState.roomCode) {
+    socket.emit('update-config', { roomCode: gameState.roomCode, config: cfgState });
+  }
+}
+
+// Load config when entering admin screen
+document.addEventListener('DOMContentLoaded', () => {
+  buildSwatches('cr-swatches', () => crColor, c => { crColor = c; crUpdatePreview(); });
+  buildSwatches('jr-swatches', () => jrColor, c => { jrColor = c; jrUpdatePreview(); });
+  buildCodeBoxes();
+  cfgLoad();
+});
+
+</script>
+</body>
+</html>
