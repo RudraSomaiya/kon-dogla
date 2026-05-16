@@ -160,6 +160,7 @@
   .toggle-thumb { transition: transform 0.2s; }
 
   /* Word Reveal envelope */
+  .envelope-container { perspective: 600px; }
   .envelope-flap {
     transform-origin: top;
     transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
@@ -170,8 +171,11 @@
     transform: translateY(0);
     z-index: 20;
   }
-  .envelope-container.is-open .envelope-flap { transform: rotateX(180deg); }
-  .envelope-container.is-open .envelope-card { transform: translateY(-80%); }
+  /* When open: card slides fully above the envelope AND overtops the flap */
+  .envelope-container.is-open .envelope-flap { transform: rotateX(180deg); z-index: 5; }
+  .envelope-container.is-open .envelope-card { transform: translateY(-110%); }
+  /* Applied by JS after card clears the flap */
+  .envelope-card.above-flap { z-index: 50; }
   .envelope-front { z-index: 40; }
   .neon-glow { text-shadow: 0 0 10px rgba(223,183,255,0.8), 0 0 20px rgba(157,0,255,0.6); }
   .neon-border-cyan { box-shadow: 0 0 10px rgba(0,219,233,0.5), inset 0 0 10px rgba(0,219,233,0.5); border-color: #00dbe9; }
@@ -929,10 +933,16 @@ function showWordReveal(data) {
   showScreen('word-reveal');
 }
 
+let _wrZTimer = null;
+
 function wrReveal() {
   document.getElementById('wr-envelope').classList.add('is-open');
   document.getElementById('wr-lock').textContent = 'lock_open';
   document.getElementById('wr-instruction').style.opacity = '0';
+  // Delay z-index boost until card has physically cleared the flap (~55% of 500ms)
+  _wrZTimer = setTimeout(() => {
+    document.getElementById('wr-card').classList.add('above-flap');
+  }, 280);
   if (!wrHasRevealed) {
     wrHasRevealed = true;
     setTimeout(wrEnableReady, 800);
@@ -940,6 +950,11 @@ function wrReveal() {
 }
 
 function wrHide() {
+  clearTimeout(_wrZTimer);
+  // Keep card on top until it's physically back below the flap (~220ms into the 500ms slide-in)
+  _wrZTimer = setTimeout(() => {
+    document.getElementById('wr-card').classList.remove('above-flap');
+  }, 220);
   document.getElementById('wr-envelope').classList.remove('is-open');
   document.getElementById('wr-lock').textContent = 'lock';
   if (!wrHasRevealed) document.getElementById('wr-instruction').style.opacity = '1';
