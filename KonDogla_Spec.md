@@ -1,5 +1,4 @@
 # Kon Dogla? — Full Stack Game Specification
-### For Antigravity Backend Integration
 
 ---
 
@@ -348,11 +347,3 @@ Share the generated `https://xxxx.trycloudflare.com` URL with players.
 ```
 
 ---
-
-## Notes for Antigravity
-
-- All socket events should be wired to frontend state transitions.
-- `game-started` is dispatched individually per socket (not broadcast) — each player gets their own role payload.
-- The frontend should **never** receive another player's role — all role logic is server-side only.
-- Admin identity is server-validated — `isAdmin` flag from join response is only used for UI hints; every admin action is re-validated server-side.
-- Room codes are 4-character uppercase alphanumeric (e.g. `KDOG`, `ZX7A`).
