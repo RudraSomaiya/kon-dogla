@@ -158,6 +158,28 @@
   /* Toggle switch */
   .toggle-track { transition: background 0.2s; }
   .toggle-thumb { transition: transform 0.2s; }
+
+  /* Word Reveal envelope */
+  .envelope-flap {
+    transform-origin: top;
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+    z-index: 30;
+  }
+  .envelope-card {
+    transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    transform: translateY(0);
+    z-index: 20;
+  }
+  .envelope-container.is-open .envelope-flap { transform: rotateX(180deg); }
+  .envelope-container.is-open .envelope-card { transform: translateY(-80%); }
+  .envelope-front { z-index: 40; }
+  .neon-glow { text-shadow: 0 0 10px rgba(223,183,255,0.8), 0 0 20px rgba(157,0,255,0.6); }
+  .neon-border-cyan { box-shadow: 0 0 10px rgba(0,219,233,0.5), inset 0 0 10px rgba(0,219,233,0.5); border-color: #00dbe9; }
+  .neon-border-yellow { box-shadow: 0 0 10px rgba(219,238,0,0.5), inset 0 0 10px rgba(219,238,0,0.5); border-color: #dbee00; }
+  .neon-text-yellow { text-shadow: 0 0 10px rgba(219,238,0,0.8); color: #dbee00; }
+  .neon-text-cyan   { text-shadow: 0 0 10px rgba(0,219,233,0.8); color: #00dbe9; }
+  .btn-ready-off { opacity:0.4; cursor:not-allowed; background:rgba(157,0,255,0.2); color:rgba(230,224,238,0.5); border-color:rgba(223,183,255,0.3); }
+  .btn-ready-on  { opacity:1; cursor:pointer; background:#9d00ff; color:#fff; border-color:#dfb7ff; box-shadow:0 0 25px rgba(157,0,255,0.8),inset 0 0 10px rgba(223,183,255,0.4); }
 </style>
 </head>
 <body class="bg-background text-on-background min-h-screen flex flex-col noise-bg overflow-x-hidden relative">
@@ -497,6 +519,93 @@
 </main>
 
 <!-- ════════════════════════════════════════════
+     SCREEN: WORD REVEAL
+════════════════════════════════════════════ -->
+<main id="screen-word-reveal" class="screen flex-col w-full min-h-screen items-center justify-center px-5 py-8 overflow-hidden">
+
+  <!-- Ready progress bar -->
+  <div class="w-full max-w-sm flex flex-col items-center gap-2 mb-10">
+    <span id="wr-ready-text" class="font-label-bold text-label-bold text-outline uppercase tracking-widest">0 of ? players ready</span>
+    <div class="w-full h-3 bg-surface-container-high rounded-full overflow-hidden border border-outline-variant/30 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+      <div id="wr-ready-bar" class="h-full bg-primary-container rounded-full shadow-[0_0_12px_rgba(157,0,255,0.8)] transition-all duration-500" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Envelope -->
+  <div id="wr-envelope" class="relative w-full max-w-[300px] aspect-[4/3] flex items-center justify-center cursor-pointer touch-manipulation envelope-container select-none mb-16"
+    onmousedown="wrReveal()" onmouseup="wrHide()" onmouseleave="wrHide()"
+    ontouchstart="wrReveal()" ontouchend="wrHide()">
+
+    <div class="absolute inset-0 bg-primary-container/30 rounded-3xl blur-[50px] z-0"></div>
+
+    <!-- Envelope back -->
+    <div class="absolute inset-0 bg-surface-container-high rounded-xl border-2 neon-border-cyan overflow-hidden z-10">
+      <div class="absolute inset-0 opacity-20" style="background-image:radial-gradient(#00dbe9 1px,transparent 1px);background-size:20px 20px"></div>
+    </div>
+
+    <!-- Secret card -->
+    <div id="wr-card" class="absolute inset-x-4 top-4 bottom-4 rounded-lg shadow-xl envelope-card flex flex-col items-center justify-center border-4 border-surface p-4 bg-white">
+      <div id="wr-role-emoji" class="text-[64px] mb-2 leading-none">🎭</div>
+      <h2 id="wr-role-word" class="font-display-lg text-headline-md text-surface tracking-tight text-center w-full uppercase">???</h2>
+      <div id="wr-role-label" class="mt-4 text-surface-container-high font-label-bold text-center w-full border-t border-surface/20 pt-2 uppercase tracking-widest text-[10px]">Your Word</div>
+    </div>
+
+    <!-- Flap top -->
+    <div class="absolute top-0 inset-x-0 h-1/2 envelope-flap">
+      <svg class="w-full h-full drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)]" preserveAspectRatio="none" viewBox="0 0 100 50">
+        <path d="M0,0 L50,45 L100,0 Z" fill="#2b2933" stroke="#dbee00" stroke-width="1.5" style="filter:drop-shadow(0 0 3px rgba(219,238,0,0.8))"/>
+      </svg>
+    </div>
+    <!-- Sides -->
+    <div class="absolute inset-0 envelope-front pointer-events-none">
+      <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <path d="M0,0 L45,50 L0,100 Z" fill="#211e28" stroke="#00dbe9" stroke-width="1" style="filter:drop-shadow(0 0 3px rgba(0,219,233,0.5))"/>
+      </svg>
+    </div>
+    <div class="absolute inset-0 envelope-front pointer-events-none">
+      <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <path d="M100,0 L55,50 L100,100 Z" fill="#211e28" stroke="#00dbe9" stroke-width="1" style="filter:drop-shadow(0 0 3px rgba(0,219,233,0.5))"/>
+      </svg>
+    </div>
+    <!-- Bottom + lock -->
+    <div class="absolute inset-0 envelope-front pointer-events-none">
+      <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+        <path d="M0,100 L50,55 L100,100 Z" fill="#2b2933" stroke="#dbee00" stroke-width="1.5" style="filter:drop-shadow(0 0 3px rgba(219,238,0,0.8))"/>
+      </svg>
+      <div class="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-container-high rounded-full p-3 border-2 neon-border-yellow z-50">
+        <span id="wr-lock" class="material-symbols-outlined text-secondary-container text-[24px]">lock</span>
+      </div>
+    </div>
+
+    <!-- Hold instruction -->
+    <div id="wr-instruction" class="absolute bottom-[-28px] left-1/2 -translate-x-1/2 pointer-events-none z-50 transition-opacity duration-300">
+      <div class="bg-background/90 backdrop-blur-md px-6 py-2 rounded-full border border-primary/40 shadow-[0_0_20px_rgba(157,0,255,0.6)] whitespace-nowrap">
+        <span class="font-label-bold text-label-bold text-primary neon-glow uppercase tracking-widest flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">touch_app</span>
+          Hold to Reveal
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Player chip -->
+  <div class="flex items-center gap-3 bg-surface-variant/40 backdrop-blur-md px-6 py-3 rounded-full border border-primary/20 shadow mb-8">
+    <div id="wr-color-dot" class="w-4 h-4 rounded-full shadow-lg border border-background"></div>
+    <span id="wr-player-name" class="font-body-lg text-body-lg text-on-surface font-bold tracking-wide">You</span>
+  </div>
+
+  <!-- Ready button -->
+  <div class="w-full max-w-[400px] flex justify-center">
+    <button id="wr-ready-btn" disabled onclick="wrMarkReady()"
+      class="btn-ready-off font-display-lg-mobile italic rounded-2xl uppercase tracking-[0.15em] transition-all duration-500 border-2 flex items-center justify-center gap-3 text-sm whitespace-nowrap py-3 px-6 w-full max-w-xs">
+      <span class="material-symbols-outlined">visibility</span>
+      I'VE SEEN IT — I'M READY
+      <span id="wr-check" class="material-symbols-outlined opacity-0 transition-opacity text-secondary-container">check_circle</span>
+    </button>
+  </div>
+</main>
+
+<!-- ════════════════════════════════════════════
      BOTTOM NAV — Mobile
 ════════════════════════════════════════════ -->
 <nav id="nav-mobile" class="fixed bottom-0 w-full rounded-t-3xl z-50 bg-surface-container/90 backdrop-blur-2xl border-t border-primary/10 shadow-[0_-8px_30px_rgba(157,0,255,0.15)] md:hidden">
@@ -538,7 +647,7 @@ let socket = null;
 let gameState = { roomCode: null, playerId: null, isHost: false, isAdmin: false, myName: '', myColor: '#9d00ff' };
 
 // ── Screen router ───────────────────────────────────────────────
-const SCREENS = ['home','create-room','join-room','lobby','admin-config'];
+const SCREENS = ['home','create-room','join-room','lobby','admin-config','word-reveal'];
 function showScreen(name) {
   SCREENS.forEach(id => {
     const el = document.getElementById('screen-' + id);
@@ -700,8 +809,15 @@ function connectSocket(name, color, roomCode) {
     renderLobby(data);
   });
   socket.on('game-started', (data) => {
-    // TODO: word reveal screen (next step)
-    console.log('game-started', data);
+    showWordReveal(data);
+  });
+  socket.on('player-ready-update', ({ readyCount, totalCount }) => {
+    wrUpdateProgress(readyCount, totalCount);
+  });
+  socket.on('all-players-ready', (data) => {
+    // TODO: Discussion screen (next step)
+    console.log('all-players-ready', data);
+    alert('All ready! First speaker: ' + data.firstSpeaker.name + '. Discussion screen coming next.');
   });
   socket.on('error', ({ message }) => {
     const errId = gameState.isHost ? 'cr-error' : 'jr-error';
@@ -773,6 +889,82 @@ function lobbyCopy() {
 function lobbyStartGame() {
   if (!socket || !gameState.roomCode) return;
   socket.emit('start-game', { roomCode: gameState.roomCode });
+}
+
+// ── WORD REVEAL ───────────────────────────────────────────────────────
+let wrHasRevealed = false;
+let wrGameData = null;
+
+function showWordReveal(data) {
+  wrGameData = data;
+  wrHasRevealed = false;
+
+  // Fill name + colour chip
+  document.getElementById('wr-player-name').textContent = gameState.myName;
+  document.getElementById('wr-color-dot').style.background = gameState.myColor;
+  document.getElementById('wr-color-dot').style.boxShadow = `0 0 8px ${gameState.myColor}88`;
+
+  // Fill secret card based on role
+  const isImposter = data.yourRole === 'imposter';
+  const secret = isImposter ? data.hint : data.word;
+  document.getElementById('wr-role-emoji').textContent = isImposter ? '👺' : '😇';
+  document.getElementById('wr-role-word').textContent  = secret || '???';
+  document.getElementById('wr-role-label').textContent = isImposter ? 'Your Hint (You are the Imposter!)' : 'Your Word';
+  // Card colour: imposter = red-ish, innocent = white
+  document.getElementById('wr-card').style.background  = isImposter ? '#93000a' : '#ffffff';
+  document.getElementById('wr-card').style.color        = isImposter ? '#ffdad6' : '#14121b';
+
+  // Reset state
+  document.getElementById('wr-envelope').classList.remove('is-open');
+  document.getElementById('wr-lock').textContent = 'lock';
+  document.getElementById('wr-instruction').style.opacity = '1';
+  const btn = document.getElementById('wr-ready-btn');
+  btn.disabled = true;
+  btn.className = 'btn-ready-off font-display-lg-mobile italic rounded-2xl uppercase tracking-[0.15em] transition-all duration-500 border-2 flex items-center justify-center gap-3 text-sm whitespace-nowrap py-3 px-6 w-full max-w-xs';
+  document.getElementById('wr-check').classList.add('opacity-0');
+
+  // Progress
+  wrUpdateProgress(0, '?');
+
+  showScreen('word-reveal');
+}
+
+function wrReveal() {
+  document.getElementById('wr-envelope').classList.add('is-open');
+  document.getElementById('wr-lock').textContent = 'lock_open';
+  document.getElementById('wr-instruction').style.opacity = '0';
+  if (!wrHasRevealed) {
+    wrHasRevealed = true;
+    setTimeout(wrEnableReady, 800);
+  }
+}
+
+function wrHide() {
+  document.getElementById('wr-envelope').classList.remove('is-open');
+  document.getElementById('wr-lock').textContent = 'lock';
+  if (!wrHasRevealed) document.getElementById('wr-instruction').style.opacity = '1';
+}
+
+function wrEnableReady() {
+  const btn = document.getElementById('wr-ready-btn');
+  btn.disabled = false;
+  btn.className = 'btn-ready-on font-display-lg-mobile italic rounded-2xl uppercase tracking-[0.15em] transition-all duration-500 border-2 flex items-center justify-center gap-3 text-sm whitespace-nowrap py-3 px-6 w-full max-w-xs';
+  document.getElementById('wr-check').classList.remove('opacity-0');
+  btn.style.transform = 'scale(1.05)';
+  setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+}
+
+function wrMarkReady() {
+  if (!socket || !gameState.roomCode) return;
+  socket.emit('player-ready', { roomCode: gameState.roomCode });
+  document.getElementById('wr-ready-btn').disabled = true;
+  document.getElementById('wr-ready-btn').textContent = 'Waiting for others...';
+}
+
+function wrUpdateProgress(ready, total) {
+  document.getElementById('wr-ready-text').textContent = `${ready} of ${total} players ready`;
+  const pct = total > 0 ? Math.round((ready / total) * 100) : 0;
+  document.getElementById('wr-ready-bar').style.width = pct + '%';
 }
 
 // ── ADMIN CONFIG ─────────────────────────────────────────────────
