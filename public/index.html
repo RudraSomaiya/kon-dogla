@@ -1038,6 +1038,10 @@ function connectSocket(name, color, roomCode) {
   socket.on('voting-tick', ({ secondsRemaining }) => {
     voteTick(secondsRemaining);
   });
+  socket.on('vote-update', ({ votedCount, totalCount }) => {
+    const label = document.getElementById('vote-count-label');
+    if (label) label.textContent = `${votedCount} OF ${totalCount} VOTED`;
+  });
   socket.on('config-updated', ({ config }) => {
     cfgLoadFromObject(config);
     document.getElementById('cfg-success').classList.remove('hidden');
@@ -1353,13 +1357,6 @@ function discGoToVote() {
   socket.emit('go-to-vote', { roomCode: gameState.roomCode });
   document.getElementById('disc-vote-btn').disabled = true;
   document.getElementById('disc-vote-btn').textContent = 'Moving to vote...';
-}
-
-// ── VOTING placeholder (next screen)
-function showVoting(data) {
-  // TODO: Voting screen
-  console.log('voting-started', data);
-  alert('Voting phase starting! ' + data.players.length + ' players alive.');
 }
 
 // ── WORD REVEAL ───────────────────────────────────────────────────────

@@ -171,7 +171,7 @@ io.on('connection', (socket) => {
     room.round++;
 
     // Reset per-round state
-    alive.forEach(p => { p.hasSeenCard = false; p.vote = null; p.isImposter = false; });
+    alive.forEach(p => { p.hasSeenCard = false; p.vote = null; p.isImposter = false; p.hasMovedToVote = false; });
 
     // Pick word
     const wordEntry = cfg.words[Math.floor(Math.random() * cfg.words.length)];
@@ -234,6 +234,8 @@ io.on('connection', (socket) => {
   socket.on('go-to-vote', ({ roomCode }) => {
     const room = getRoom(roomCode);
     if (!room || room.state !== 'DISCUSSION') return;
+    const player = getPlayer(room, socket.id);
+    if (player) player.hasMovedToVote = true;
     // Move this specific socket to voting
     socket.emit('voting-started', {
       players: alivePlayers(room).map(p => ({ id: p.id, name: p.name, color: p.color }))
@@ -242,7 +244,7 @@ io.on('connection', (socket) => {
 
   socket.on('submit-vote', ({ roomCode, targetId }) => {
     const room = getRoom(roomCode);
-    if (!room || room.state !== 'VOTING') return;
+    if (!room || (room.state !== 'VOTING' && room.state !== 'DISCUSSION')) return;
     const player = getPlayer(room, socket.id);
     if (!player || !player.isAlive) return;
     if (player.id === targetId) return; // can't vote self
@@ -253,6 +255,7 @@ io.on('connection', (socket) => {
     io.to(roomCode).emit('vote-update', { votedCount, totalCount: alive.length });
 
     if (votedCount === alive.length) {
+      clearInterval(room.discussionTimer);
       resolveVotes(room);
     }
   });
@@ -335,9 +338,17 @@ function startDiscussionTimer(room) {
 function startVoting(room) {
   room.state = 'VOTING';
   const alive = alivePlayers(room);
-  alive.forEach(p => { p.vote = null; });
-  io.to(room.code).emit('voting-started', {
-    players: alive.map(p => ({ id: p.id, name: p.name, color: p.color }))
+  
+  alive.forEach(p => {
+    if (!p.hasMovedToVote) {
+      p.hasMovedToVote = true;
+      const playerSocket = io.sockets.sockets.get(p.id);
+      if (playerSocket) {
+        playerSocket.emit('voting-started', {
+          players: alive.map(a => ({ id: a.id, name: a.name, color: a.color }))
+        });
+      }
+    }
   });
 
   const cfg = loadConfig();
@@ -355,6 +366,7 @@ function startVoting(room) {
 
 function resolveVotes(room) {
   clearInterval(room.votingTimer);
+  clearInterval(room.discussionTimer);
   room.state = 'ELIMINATION';
   const alive = alivePlayers(room);
 
