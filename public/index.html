@@ -117,7 +117,7 @@
   .tactile-btn { box-shadow: 0 4px 0 rgba(0,0,0,0.5); transition: all 0.1s; }
   .tactile-btn:active { box-shadow: none; transform: translateY(4px) scale(0.98); }
   .swatch-active { outline: 3px solid #e6e0ee; outline-offset: 3px; }
-  input[type=color] { opacity:0; position:absolute; width:100%; height:100%; cursor:pointer; }
+  input[type=color] { opacity:0; position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer; z-index:10; }
   .hide-scrollbar::-webkit-scrollbar { display:none; }
   .hide-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
 
@@ -194,6 +194,76 @@
   .neon-text-cyan   { text-shadow: 0 0 10px rgba(0,219,233,0.8); color: #00dbe9; }
   .btn-ready-off { opacity:0.4; cursor:not-allowed; background:rgba(157,0,255,0.2); color:rgba(230,224,238,0.5); border-color:rgba(223,183,255,0.3); }
   .btn-ready-on  { opacity:1; cursor:pointer; background:#9d00ff; color:#fff; border-color:#dfb7ff; box-shadow:0 0 25px rgba(157,0,255,0.8),inset 0 0 10px rgba(223,183,255,0.4); }
+
+  /* Premium Animations */
+  @keyframes breathe {
+    0%, 100% { box-shadow: 0 0 10px var(--card-color, rgba(255,255,255,0.2)); opacity: 0.2; }
+    50% { box-shadow: 0 0 35px var(--card-color, rgba(255,255,255,0.6)); opacity: 0.7; }
+  }
+  .animate-breathe {
+    animation: breathe 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmerMove {
+    0% { transform: translateX(-150%) skewX(-20deg); }
+    100% { transform: translateX(150%) skewX(-20deg); }
+  }
+  .shimmer-btn {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-btn::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 60%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmerMove 3s infinite linear;
+    pointer-events: none;
+    z-index: 10;
+    mix-blend-mode: overlay;
+  }
+
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+  }
+  .animate-ripple {
+    position: relative;
+  }
+  .animate-ripple::before {
+    content: '';
+    position: absolute; inset: -2px; border-radius: 50%;
+    border: 2px solid var(--dot-color, white);
+    animation: ripple 1.5s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    pointer-events: none;
+  }
+
+  @keyframes gentleFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+  .animate-float {
+    animation: gentleFloat 4s ease-in-out infinite;
+  }
+
+  @keyframes votePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(223,183,255,0.2), inset 0 0 10px rgba(223,183,255,0.1); }
+    50% { transform: scale(1.02); box-shadow: 0 0 40px rgba(223,183,255,0.6), inset 0 0 20px rgba(223,183,255,0.4); }
+  }
+  .animate-vote-pulse {
+    animation: votePulse 2s ease-in-out infinite;
+    border-color: #dfb7ff !important;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.08); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.08); }
+  }
+  .animate-heartbeat {
+    animation: heartbeat 2.5s ease-in-out infinite;
+  }
 </style>
 </head>
 <body class="bg-background text-on-background min-h-screen flex flex-col noise-bg overflow-x-hidden relative">
@@ -232,7 +302,7 @@
     <!-- Create Room -->
     <button id="btn-create-room" onclick="showScreen('create-room')" class="w-full relative group hover:scale-105 active:scale-95 transition-all duration-200">
       <div class="absolute inset-0 bg-primary-container rounded-2xl blur-lg opacity-50 group-hover:opacity-80 transition-opacity"></div>
-      <div class="relative bg-gradient-to-br from-primary-container to-on-primary-fixed-variant text-on-primary-container font-headline-md text-headline-md py-6 px-8 rounded-2xl border-2 border-primary-container shadow-[0_8px_0_0_rgba(75,0,126,1)] active:shadow-[0_0px_0_0_rgba(75,0,126,1)] active:translate-y-2 flex items-center justify-center space-x-3 overflow-hidden">
+      <div class="relative bg-gradient-to-br from-primary-container to-on-primary-fixed-variant text-on-primary-container font-headline-md text-headline-md py-6 px-8 rounded-2xl border-2 border-primary-container shadow-[0_8px_0_0_rgba(75,0,126,1)] active:shadow-[0_0px_0_0_rgba(75,0,126,1)] active:translate-y-2 flex items-center justify-center space-x-3 overflow-hidden shimmer-btn">
         <div class="absolute top-0 left-0 w-full h-1 bg-white/20"></div>
         <span class="material-symbols-outlined text-4xl">add_circle</span>
         <span>CREATE ROOM</span>
@@ -242,7 +312,7 @@
     <!-- Join Room -->
     <button id="btn-join-room" onclick="showScreen('join-room')" class="w-full relative group hover:scale-105 active:scale-95 transition-all duration-200">
       <div class="absolute inset-0 bg-secondary-container rounded-2xl blur-lg opacity-40 group-hover:opacity-70 transition-opacity"></div>
-      <div class="relative bg-gradient-to-br from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-md text-headline-md py-6 px-8 rounded-2xl border-2 border-secondary-container shadow-[0_8px_0_0_rgba(97,106,0,1)] active:shadow-[0_0px_0_0_rgba(97,106,0,1)] active:translate-y-2 flex items-center justify-center space-x-3 overflow-hidden">
+      <div class="relative bg-gradient-to-br from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-md text-headline-md py-6 px-8 rounded-2xl border-2 border-secondary-container shadow-[0_8px_0_0_rgba(97,106,0,1)] active:shadow-[0_0px_0_0_rgba(97,106,0,1)] active:translate-y-2 flex items-center justify-center space-x-3 overflow-hidden shimmer-btn">
         <div class="absolute top-0 left-0 w-full h-1 bg-white/30"></div>
         <span class="material-symbols-outlined text-4xl">login</span>
         <span>JOIN ROOM</span>
@@ -302,7 +372,7 @@
   <!-- Sticky CTA -->
   <div class="fixed bottom-0 w-full px-5 pb-8 pt-4 bg-gradient-to-t from-background via-background/90 to-transparent z-40">
     <button id="cr-submit" onclick="crSubmit()"
-      class="w-full bg-gradient-to-r from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-sm text-headline-sm py-5 rounded-2xl shadow-[0_6px_0_#9d00ff] active:translate-y-[6px] active:shadow-none transition-all flex items-center justify-center gap-2">
+      class="w-full bg-gradient-to-r from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-sm text-headline-sm py-5 rounded-2xl shadow-[0_6px_0_#9d00ff] active:translate-y-[6px] active:shadow-none transition-all flex items-center justify-center gap-2 shimmer-btn overflow-hidden">
       <span>START ROOM</span>
       <span class="material-symbols-outlined text-[28px]">arrow_forward</span>
     </button>
@@ -360,7 +430,7 @@
   <!-- Sticky CTA -->
   <div class="fixed bottom-0 w-full max-w-md left-1/2 -translate-x-1/2 px-5 pb-8 pt-4 bg-gradient-to-t from-background via-background/90 to-transparent z-40">
     <button id="jr-submit" onclick="jrSubmit()"
-      class="w-full bg-gradient-to-r from-secondary-container to-secondary-fixed-dim rounded-2xl py-5 px-6 flex justify-between items-center tactile-btn neon-shadow">
+      class="w-full bg-gradient-to-r from-secondary-container to-secondary-fixed-dim rounded-2xl py-5 px-6 flex justify-between items-center tactile-btn neon-shadow shimmer-btn overflow-hidden">
       <span class="font-headline-sm text-headline-sm text-on-secondary-fixed uppercase tracking-wider">JOIN ROOM</span>
       <span class="material-symbols-outlined text-on-secondary-fixed text-3xl" style="font-variation-settings:'FILL' 1">login</span>
     </button>
@@ -420,7 +490,7 @@
   <!-- Bottom CTA -->
   <div class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-background via-background to-transparent pt-12 pb-8 px-5 flex justify-center z-40">
     <!-- HOST: Start Game -->
-    <button id="lobby-start-btn" onclick="lobbyStartGame()" class="hidden w-full max-w-md bg-gradient-to-r from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-sm text-headline-sm py-5 rounded-full shadow-[0_8px_0_rgba(97,106,0,1)] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3">
+    <button id="lobby-start-btn" onclick="lobbyStartGame()" class="hidden w-full max-w-md bg-gradient-to-r from-secondary-container to-secondary-fixed-dim text-on-secondary-container font-headline-sm text-headline-sm py-5 rounded-full shadow-[0_8px_0_rgba(97,106,0,1)] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-3 shimmer-btn overflow-hidden">
       START GAME
       <span class="material-symbols-outlined text-[28px]" style="font-variation-settings:'FILL' 1">play_arrow</span>
     </button>
@@ -552,7 +622,7 @@
 
     <!-- Speaker chip -->
     <div class="flex items-center gap-4 bg-surface-container-high/50 px-8 py-3 rounded-full border border-outline-variant/30">
-      <div id="disc-speaker-dot" class="w-4 h-4 rounded-full shadow-[0_0_15px_rgba(255,180,171,0.8)]" style="background:#ff6b6b"></div>
+      <div id="disc-speaker-dot" class="w-4 h-4 rounded-full shadow-[0_0_15px_rgba(255,180,171,0.8)] animate-ripple" style="background:#ff6b6b; --dot-color:#ff6b6b"></div>
       <h3 id="disc-speaker-name" class="font-headline-sm text-headline-sm text-on-surface uppercase tracking-widest">---</h3>
     </div>
 
@@ -565,7 +635,7 @@
     <!-- Vote CTA -->
     <div id="disc-vote-wrap" class="w-full pt-4">
       <button id="disc-vote-btn" onclick="discGoToVote()"
-        class="w-full bg-secondary-container text-on-secondary-container font-display-lg-mobile py-5 rounded-xl shadow-[0_8px_32px_rgba(219,238,0,0.3)] hover:scale-[1.02] active:scale-95 transition-all uppercase flex items-center justify-center gap-4 italic tracking-wider">
+        class="w-full bg-secondary-container text-on-secondary-container font-display-lg-mobile py-5 rounded-xl shadow-[0_8px_32px_rgba(219,238,0,0.3)] hover:scale-[1.02] active:scale-95 transition-all uppercase flex items-center justify-center gap-4 italic tracking-wider shimmer-btn overflow-hidden">
         <span class="material-symbols-outlined text-3xl" style="font-variation-settings:'FILL' 1">how_to_vote</span>
         VOTE
       </button>
@@ -627,7 +697,7 @@
   <footer class="fixed bottom-0 left-0 w-full p-5 bg-gradient-to-t from-background via-background/95 to-transparent z-50">
     <div class="max-w-lg mx-auto flex flex-col gap-3">
       <button onclick="goPlayAgain()"
-        class="w-full h-14 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center gap-3 shadow-[0_6px_0_0_#616a00] hover:shadow-[0_4px_0_0_#616a00] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all group">
+        class="w-full h-14 bg-secondary-container text-on-secondary-container rounded-2xl flex items-center justify-center gap-3 shadow-[0_6px_0_0_#616a00] hover:shadow-[0_4px_0_0_#616a00] hover:translate-y-[2px] active:shadow-none active:translate-y-[6px] transition-all group shimmer-btn overflow-hidden">
         <span class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-500">replay</span>
         <span class="font-display-lg-mobile text-[20px] uppercase">PLAY AGAIN</span>
       </button>
@@ -693,7 +763,7 @@
     </div>
 
     <!-- Big circle -->
-    <div id="elim-circle" class="relative w-64 h-64 rounded-full flex items-center justify-center border-4 border-on-secondary-container/20"
+    <div id="elim-circle" class="relative w-64 h-64 rounded-full flex items-center justify-center border-4 border-on-secondary-container/20 animate-heartbeat"
          style="background:#dbee00;box-shadow:0 0 60px rgba(221,238,0,0.4),inset 0 0 20px rgba(221,238,0,0.2)">
       <div class="absolute inset-2 border-2 border-dashed border-on-secondary-container/30 rounded-full"></div>
       <span id="elim-icon" class="material-symbols-outlined text-[140px] text-on-secondary-container"
@@ -731,7 +801,7 @@
   </div>
 
   <!-- Envelope -->
-  <div id="wr-envelope" class="relative w-full max-w-[300px] aspect-[4/3] flex items-center justify-center cursor-pointer touch-manipulation envelope-container select-none mb-16"
+  <div id="wr-envelope" class="relative w-full max-w-[300px] aspect-[4/3] flex items-center justify-center cursor-pointer touch-manipulation envelope-container select-none mb-16 animate-float"
     onmousedown="wrReveal()" onmouseup="wrHide()" onmouseleave="wrHide()"
     ontouchstart="wrReveal()" ontouchend="wrHide()">
 
@@ -854,10 +924,8 @@ function showScreen(name) {
   });
   // Bottom nav only visible on Home
   const onHome = name === 'home';
-  document.getElementById('nav-mobile').classList.toggle('hidden', !onHome);
-  const desk = document.getElementById('nav-desktop');
-  desk.classList.toggle('hidden', !onHome);
-  desk.classList.toggle('md:flex', onHome);
+  document.getElementById('nav-mobile').style.display = onHome ? '' : 'none';
+  document.getElementById('nav-desktop').style.display = onHome ? '' : 'none';
 }
 
 // ── Logo easter egg ─────────────────────────────────────────────
@@ -1064,7 +1132,7 @@ function renderLobby(data) {
     card.className = 'relative group player-card';
     card.style.animationDelay = (i * 60) + 'ms';
     card.innerHTML = `
-      <div class="absolute inset-0 rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity" style="background:${p.color}"></div>
+      <div class="absolute inset-0 rounded-2xl blur-lg transition-opacity animate-breathe" style="background:${p.color}; --card-color:${p.color}"></div>
       <div class="relative bg-surface-container-low/80 backdrop-blur-xl border rounded-2xl p-5 flex flex-col items-center gap-3 hover:-translate-y-1 transition-transform duration-300" style="border-color:${p.color}22">
         <div class="w-14 h-14 rounded-full flex items-center justify-center border-2 border-background shadow-lg relative" style="background:${p.color}">
           <span class="material-symbols-outlined text-background text-[28px]" style="font-variation-settings:'FILL' 1">person</span>
@@ -1133,7 +1201,7 @@ function renderVoteList() {
     el.className = isMe
       ? 'w-full flex items-center justify-between p-6 rounded-2xl bg-surface-container-lowest/50 border border-outline-variant/10 opacity-40'
       : isSel
-        ? 'w-full relative p-6 rounded-2xl bg-primary-container/20 border-2 border-secondary-container transition-all duration-150'
+        ? 'w-full relative p-6 rounded-2xl bg-primary-container/20 border-2 border-secondary-container transition-all duration-150 animate-vote-pulse'
         : 'w-full flex items-center justify-between p-6 rounded-2xl bg-surface-container-low border border-outline-variant/30 active:scale-95 transition-all duration-150';
     if (isSel) el.style.boxShadow = '0 0 25px rgba(223,183,255,0.2),inset 0 0 10px rgba(223,183,255,0.1)';
     el.innerHTML = isMe
@@ -1326,6 +1394,7 @@ function showDiscussion(data) {
   document.getElementById('disc-bg').style.background =
     `radial-gradient(ellipse at center, ${c}44 0%, #14121b 70%)`;
   document.getElementById('disc-speaker-dot').style.background = c;
+  document.getElementById('disc-speaker-dot').style.setProperty('--dot-color', c);
   document.getElementById('disc-speaker-dot').style.boxShadow = `0 0 15px ${c}88`;
   document.getElementById('disc-speaker-name').textContent = speaker.name;
 
