@@ -1218,7 +1218,11 @@ function elimNext() {
     document.getElementById('elim-next-btn').disabled = true;
     document.getElementById('elim-next-btn').textContent = 'Waiting...';
   } else {
-    showScreen('lobby');
+    if (gameState.isHost && socket && gameState.roomCode) {
+      socket.emit('next-round', { roomCode: gameState.roomCode });
+    } else {
+      showScreen('lobby');
+    }
   }
 }
 
